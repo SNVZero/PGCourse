@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модуль 8: Практический проект | PostgreSQL Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Стили для проекта */
+        .project-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .project-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .project-info {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .info-card i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .project-description {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .project-description h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .project-overview {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .project-overview h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .requirements-list {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .requirements-list li {
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+        
+        .schema-diagram {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1.5rem 0;
+            border: 1px dashed #dee2e6;
+        }
+        
+        .schema-diagram h4 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .schema-code {
+            background-color: #1E1E1E;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+        
+        .task-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .task-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .task-card {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .task-number {
+            background-color: var(--primary-color);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: bold;
+        }
+        
+        .task-points {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .task-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .task-description {
+            margin-bottom: 1rem;
+            color: var(--gray-color);
+        }
+        
+        .sql-editor {
+            background-color: #1E1E1E;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .sql-editor textarea {
+            width: 100%;
+            min-height: 150px;
+            background-color: #1E1E1E;
+            color: #f8f8f2;
+            border: none;
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            border-radius: var(--border-radius);
+            resize: vertical;
+        }
+        
+        .code-hint {
+            background-color: rgba(39, 174, 96, 0.1);
+            border-left: 4px solid var(--accent-color);
+            padding: 1rem;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            margin: 1rem 0;
+        }
+        
+        .hint-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .delivery-section {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 2rem 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .delivery-section h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .project-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .save-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .save-btn:hover {
+            background-color: #2a5780;
+            transform: translateY(-2px);
+        }
+        
+        .submit-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .submit-btn:hover {
+            background-color: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .reset-btn {
+            background-color: var(--gray-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .reset-btn:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .modal-header h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            color: var(--accent-color);
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .close-modal {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            margin-top: 1.5rem;
+            width: 100%;
+            font-weight: 600;
+        }
+        
+        .close-modal:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .points-summary {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+        }
+        
+        .points-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .total-points {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .project-controls {
+                flex-direction: column;
+            }
+            
+            .save-btn, .submit-btn, .reset-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .project-info {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .info-card {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .task-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+        
+        .sql-keyword {
+            color: #569CD6;
+        }
+        
+        .sql-function {
+            color: #DCDCAA;
+        }
+        
+        .sql-string {
+            color: #CE9178;
+        }
+        
+        .sql-comment {
+            color: #6A9955;
+        }
+    </style>
+</head>
+<body>
+    
+    
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Заголовок проекта -->
+        <div class="project-header">
+            <h1>Практический проект</h1>
+            <p>Примените все полученные знания на практике в комплексном проекте</p>
+            
+            <div class="project-info">
+                <div class="info-card">
+                    <i class="fas fa-tasks"></i>
+                    <h3>Задачи</h3>
+                    <p>8 основных задач</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>Время</h3>
+                    <p>Не ограничено</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-star"></i>
+                    <h3>Баллы</h3>
+                    <p>Макс. 100 баллов</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>Тип работы</h3>
+                    <p>Индивидуальный проект</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Описание проекта -->
+        <div class="project-description">
+            <h3><i class="fas fa-info-circle"></i> Описание проекта</h3>
+            <p>В этом проекте вы создадите полноценную базу данных для системы управления библиотекой. Проект охватывает все аспекты работы с PostgreSQL: от проектирования схемы до сложных аналитических запросов и оптимизации производительности.</p>
+            <p><strong>Цель проекта:</strong> продемонстрировать умение применять знания из всех модулей курса на практике, создавая комплексное решение реальной задачи.</p>
+        </div>
+        
+        <!-- Обзор проекта -->
+        <section class="project-overview">
+            <h2><i class="fas fa-book-open"></i> Обзор проекта</h2>
+            
+            <h3>Система управления библиотекой</h3>
+            <p>Вам необходимо разработать базу данных для системы управления библиотекой, которая должна хранить информацию о:</p>
+            
+            <ul class="requirements-list">
+                <li>Книгах и их авторах</li>
+                <li>Читателях библиотеки</li>
+                <li>Выдаче и возврате книг</li>
+                <li>Жанрах и категориях книг</li>
+                <li>Издательствах</li>
+                <li>Штрафах за просрочку возврата</li>
+            </ul>
+            
+            <div class="schema-diagram">
+                <h4>Примерная схема базы данных:</h4>
+                <div class="schema-code">
+                    <code><span class="sql-comment">-- Основные таблицы системы:</span>
+<span class="sql-comment">-- 1. books - книги</span>
+<span class="sql-comment">-- 2. authors - авторы</span>
+<span class="sql-comment">-- 3. genres - жанры</span>
+<span class="sql-comment">-- 4. publishers - издательства</span>
+<span class="sql-comment">-- 5. readers - читатели</span>
+<span class="sql-comment">-- 6. loans - выдача книг</span>
+<span class="sql-comment">-- 7. returns - возврат книг</span>
+<span class="sql-comment">-- 8. fines - штрафы</span></code>
+                </div>
+            </div>
+            
+            <div class="code-hint">
+                <div class="hint-title">
+                    <i class="fas fa-lightbulb"></i> Важное примечание
+                </div>
+                <p>Проект выполняется поэтапно. Каждая следующая задача может зависеть от правильного выполнения предыдущих. Рекомендуется выполнять задачи по порядку.</p>
+            </div>
+        </section>
+        
+        <!-- Задачи проекта -->
+        <section class="task-section">
+            <h2><i class="fas fa-tasks"></i> Задачи проекта</h2>
+            
+            <!-- Задача 1 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">1</div>
+                    <div class="task-points">10 баллов</div>
+                </div>
+                <div class="task-title">Проектирование и создание схемы базы данных</div>
+                <div class="task-description">
+                    Создайте базу данных "library_db" и все необходимые таблицы с соответствующими полями, первичными и внешними ключами.
+                </div>
+                
+                <div class="sql-editor">
+                    <textarea id="task1" placeholder="Напишите SQL запросы для создания базы данных и таблиц..."></textarea>
+                </div>
+                
+                <div class="code-hint">
+                    <div class="hint-title">
+                        <i class="fas fa-lightbulb"></i> Подсказка
+                    </div>
+                    <p>Включите следующие таблицы: books, authors, genres, publishers, readers, loans, returns, fines. Не забудьте о связях между таблицами.</p>
+                </div>
+            </div>
+            
+            <!-- Задача 2 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">2</div>
+                    <div class="task-points">10 баллов</div>
+                </div>
+                <div class="task-title">Наполнение базы тестовыми данными</div>
+                <div class="task-description">
+                    Заполните все таблицы тестовыми данными. В каждой таблице должно быть не менее 10 записей. Данные должны быть реалистичными и взаимосвязанными.
+                </div>
+                
+                <div class="sql-editor">
+                    <textarea id="task2" placeholder="Напишите SQL запросы для вставки тестовых данных..."></textarea>
+                </div>
+                
+                <div class="code-hint">
+                    <div class="hint-title">
+                        <i class="fas fa-lightbulb"></i> Подсказка
+                    </div>
+                    <p>Используйте оператор INSERT. Убедитесь, что внешние ключи ссылаются на существующие записи в родительских таблицах.</p>
+                </div>
+            </div>
+            
+            <!-- Задача 3 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">3</div>
+                    <div class="task-points">15 баллов</div>
+                </div>
+                <div class="task-title">Базовые запросы и фильтрация</div>
+                <div class="task-description">
+                    Напишите запросы для:
+                    <ol>
+                        <li>Поиска всех книг определенного автора</li>
+                        <li>Поиска книг, изданных после 2020 года</li>
+                        <li>Поиска читателей с просроченными книгами (более 30 дней)</li>
+                    </ol>
+                </div>
+                
+                <div class="sql-editor">
+                    <textarea id="task3" placeholder="Напишите SQL запросы для решения задач..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Задача 4 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">4</div>
+                    <div class="task-points">15 баллов</div>
+                </div>
+                <div class="task-title">Сложные JOIN запросы</div>
+                <div class="task-description">
+                    Напишите запросы с использованием различных типов JOIN:
+                    <ol>
+                        <li>Список всех книг с информацией об авторе и издательстве</li>
+                        <li>Список всех читателей с информацией о взятых книгах (даже если книг нет)</li>
+                        <li>Книги, которые никогда не брались читателями</li>
+                    </ol>
+                </div>
+                
+                <div class="sql-editor">
+                    <textarea id="task4" placeholder="Напишите SQL запросы с JOIN операциями..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Задача 5 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">5</div>
+                    <div class="task-points">15 баллов</div>
+                </div>
+                <div class="task-title">Агрегация и аналитические запросы</div>
+                <div class="task-description">
+                    Напишите аналитические запросы:
+                    <ol>
+                        <li>Количество книг по каждому жанру</li>
+                        <li>Топ-5 самых популярных книг (по количеству выдач)</li>
+                        <li>Среднее количество дней, на которое берут книги</li>
+                        <li>Общая сумма штрафов по каждому читателю</li>
+                    </ol>
+                </div>
+                
+                <div class="sql-editor">
+                    <textarea id="task5" placeholder="Напишите SQL запросы с агрегатными функциями..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Задача 6 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">6</div>
+                    <div class="task-points">15 баллов</div>
+                </div>
+                <div class="task-title">Расширенные возможности PostgreSQL</div>
+                <div class="task-description">
+                    Продемонстрируйте использование продвинутых функций:
+                    <ol>
+                        <li>Используйте CTE для поиска цепочки рекомендаций книг</li>
+                        <li>Создайте представление (VIEW) для часто используемого сложного запроса</li>
+                        <li>Используйте оконные функции для ранжирования авторов по количеству книг</li>
+                    </ol>
+                </div>
+                
+                <div class="sql-editor">
+                    <textarea id="task6" placeholder="Напишите SQL запросы с CTE, VIEW и оконными функциями..."></textarea>
+                </div>
+                
+                <div class="code-hint">
+                    <div class="hint-title">
+                        <i class="fas fa-lightbulb"></i> Подсказка
+                    </div>
+                    <p>Для CTE можно создать рекурсивный запрос, который найдет книги, похожие на уже прочитанные читателем.</p>
+                </div>
+            </div>
+            
+            <!-- Задача 7 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">7</div>
+                    <div class="task-points">10 баллов</div>
+                </div>
+                <div class="task-title">Оптимизация производительности</div>
+                <div class="task-description">
+                    Оптимизируйте производительность базы данных:
+                    <ol>
+                        <li>Создайте индексы для часто используемых полей</li>
+                        <li>Напишите EXPLAIN запрос для анализа производительности самого сложного запроса</li>
+                        <li>Предложите оптимизации на основе анализа</li>
+                    </ol>
+                </div>
+                
+                <div class="sql-editor">
+                    <textarea id="task7" placeholder="Напишите SQL команды для создания индексов и оптимизации..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Задача 8 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <div class="task-number">8</div>
+                    <div class="task-points">10 баллов</div>
+                </div>
+                <div class="task-title">Документация и отчет</div>
+                <div class="task-description">
+                    Подготовьте краткую документацию:
+                    <ol>
+                        <li>Описание структуры базы данных</li>
+                        <li>Объяснение ключевых запросов</li>
+                        <li>Рекомендации по использованию и поддержке</li>
+                    </ol>
+                </div>
+                
+                <div class="sql-editor">
+                    <textarea id="task8" placeholder="Напишите документацию к вашему проекту..."></textarea>
+                </div>
+                
+                <div class="code-hint">
+                    <div class="hint-title">
+                        <i class="fas fa-lightbulb"></i> Подсказка
+                    </div>
+                    <p>Документация может быть в свободной форме, но должна быть понятной и информативной.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Требования к сдаче -->
+        <div class="delivery-section">
+            <h3><i class="fas fa-paper-plane"></i> Требования к сдаче проекта</h3>
+            <p><strong>Формат сдачи:</strong> SQL файл с комментариями + текстовый отчет в формате PDF</p>
+            <p><strong>Содержание отчета:</strong></p>
+            <ol>
+                <li>Титульный лист с названием проекта и данными студента</li>
+                <li>Описание задачи и целей проекта</li>
+                <li>Схема базы данных (можно в виде диаграммы или описания)</li>
+                <li>SQL код с комментариями</li>
+                <li>Примеры выполнения запросов (скриншоты или текстовые результаты)</li>
+                <li>Выводы и рекомендации</li>
+            </ol>
+            <p><strong>Критерии оценки:</strong> полнота реализации, корректность SQL запросов, оптимальность решений, качество документации.</p>
+        </div>
+        
+        <!-- Элементы управления проектом -->
+        <div class="project-controls">
+            <button class="reset-btn" onclick="resetProject()">
+                <i class="fas fa-redo"></i> Очистить все
+            </button>
+            
+            <button class="save-btn" onclick="saveProject()">
+                <i class="fas fa-save"></i> Сохранить черновик
+            </button>
+            
+            <button class="submit-btn" id="submit" onclick="submitProject()">
+                <i class="fas fa-paper-plane"></i> Отправить проект
+            </button>
+        </div>
+    </main>
+    
+    <!-- Модальное окно успешной отправки -->
+    <div class="success-modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Проект отправлен!</h2>
+                <p>Ваш практический проект успешно сохранен</p>
+            </div>
+            
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            
+            <div class="points-summary">
+                <h4>Ориентировочная оценка (на основе заполнения):</h4>
+                <div class="points-item">
+                    <span>Задача 1:</span>
+                    <span id="task1Points">0/10</span>
+                </div>
+                <div class="points-item">
+                    <span>Задача 2:</span>
+                    <span id="task2Points">0/10</span>
+                </div>
+                <div class="points-item">
+                    <span>Задача 3:</span>
+                    <span id="task3Points">0/15</span>
+                </div>
+                <div class="points-item">
+                    <span>Задача 4:</span>
+                    <span id="task4Points">0/15</span>
+                </div>
+                <div class="points-item">
+                    <span>Задача 5:</span>
+                    <span id="task5Points">0/15</span>
+                </div>
+                <div class="points-item">
+                    <span>Задача 6:</span>
+                    <span id="task6Points">0/15</span>
+                </div>
+                <div class="points-item">
+                    <span>Задача 7:</span>
+                    <span id="task7Points">0/10</span>
+                </div>
+                <div class="points-item">
+                    <span>Задача 8:</span>
+                    <span id="task8Points">0/10</span>
+                </div>
+                <div class="total-points" id="totalPoints">Всего: 0/100</div>
+            </div>
+            
+            <div class="feedback" style="margin-top: 1.5rem;">
+                <h4>Дальнейшие шаги:</h4>
+                <p>1. Экспортируйте свои ответы в SQL файл</p>
+                <p>2. Подготовьте отчет в формате PDF</p>
+                <p>3. Отправьте оба файла преподавателю</p>
+                <p style="margin-top: 1rem; font-style: italic;">Окончательная оценка будет выставлена преподавателем после проверки проекта.</p>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="close-modal" onclick="closeSuccess()">Закрыть</button>
+                <button class="cta-button" onclick="exportProject()" style="flex: 1;">
+                    <i class="fas fa-download"></i> Экспортировать SQL
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script src="script.js"></script>
+    <script>
+        // Сохранение проекта в localStorage
+        function saveProject() {
+            for (let i = 1; i <= 8; i++) {
+                const textarea = document.getElementById(`task${i}`);
+                localStorage.setItem(`project_task_${i}`, textarea.value);
+            }
+            
+            // Показать уведомление
+            showNotification('Черновик проекта сохранен!', 'success');
+        }
+        
+        // Загрузка сохраненного проекта
+        function loadSavedProject() {
+            for (let i = 1; i <= 8; i++) {
+                const savedValue = localStorage.getItem(`project_task_${i}`);
+                if (savedValue) {
+                    document.getElementById(`task${i}`).value = savedValue;
+                }
+            }
+        }
+        
+        // Сброс проекта
+        function resetProject() {
+            if (confirm('Вы уверены, что хотите очистить все поля проекта? Все сохраненные данные будут удалены.')) {
+                for (let i = 1; i <= 8; i++) {
+                    document.getElementById(`task${i}`).value = '';
+                    localStorage.removeItem(`project_task_${i}`);
+                }
+                showNotification('Все поля очищены!', 'info');
+            }
+        }
+        
+        // Отправка проекта
+        function submitProject() {
+            // Проверка заполнения
+            let emptyTasks = [];
+            let estimatedPoints = 0;
+            
+            for (let i = 1; i <= 8; i++) {
+                const taskValue = document.getElementById(`task${i}`).value.trim();
+                let taskPoints = 0;
+                
+                // Оценка заполнения задач
+                if (taskValue.length > 0) {
+                    if (taskValue.length > 100) {
+                        taskPoints = getMaxPointsForTask(i);
+                    } else if (taskValue.length > 50) {
+                        taskPoints = Math.floor(getMaxPointsForTask(i) * 0.5);
+                    } else {
+                        taskPoints = Math.floor(getMaxPointsForTask(i) * 0.2);
+                    }
+                } else {
+                    emptyTasks.push(i);
+                }
+                
+                estimatedPoints += taskPoints;
+                
+                // Обновление отображения баллов
+                document.getElementById(`task${i}Points`).textContent = 
+                    `${taskPoints}/${getMaxPointsForTask(i)}`;
+            }
+            
+            document.getElementById('totalPoints').textContent = `Всего: ${estimatedPoints}/100`;
+            
+            // Показать предупреждение о пустых задачах
+            if (emptyTasks.length > 0) {
+                const taskList = emptyTasks.join(', ');
+                if (!confirm(`Задачи ${taskList} не заполнены. Вы уверены, что хотите отправить проект?`)) {
+                    return;
+                }
+            }
+            
+            // Показать модальное окно успеха
+            document.getElementById('successModal').style.display = 'flex';
+            
+            // Прокрутка к верху страницы
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+        
+        // Получение максимальных баллов для задачи
+        function getMaxPointsForTask(taskNumber) {
+            const pointsMap = {
+                1: 10, 2: 10, 3: 15, 4: 15, 
+                5: 15, 6: 15, 7: 10, 8: 10
+            };
+            return pointsMap[taskNumber] || 0;
+        }
+        
+        // Экспорт проекта в SQL файл
+        function exportProject() {
+            let sqlContent = `-- Практический проект: Система управления библиотекой\n`;
+            sqlContent += `-- Автор: [Ваше имя]\n`;
+            sqlContent += `-- Дата: ${new Date().toLocaleDateString()}\n\n`;
+            
+            for (let i = 1; i <= 8; i++) {
+                const taskValue = document.getElementById(`task${i}`).value.trim();
+                if (taskValue) {
+                    sqlContent += `-- Задача ${i}\n`;
+                    sqlContent += taskValue + '\n\n';
+                }
+            }
+            
+            // Создание и скачивание файла
+            const blob = new Blob([sqlContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'library_management_project.sql';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('SQL файл успешно экспортирован!', 'success');
+        }
+        
+        // Закрытие модального окна
+        function closeSuccess() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+        
+        // Показать уведомление
+        function showNotification(message, type) {
+            // Создание элемента уведомления
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background-color: ${type === 'success' ? 'var(--accent-color)' : 'var(--primary-color)'};
+                color: white;
+                border-radius: var(--border-radius);
+                box-shadow: var(--box-shadow);
+                z-index: 1002;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Удаление уведомления через 3 секунды
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Добавление CSS анимаций
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Автоматическое сохранение при изменении
+        document.querySelectorAll('textarea').forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                // Сохраняем с задержкой, чтобы не перегружать localStorage
+                clearTimeout(this.saveTimeout);
+                this.saveTimeout = setTimeout(() => {
+                    const taskId = this.id.replace('task', '');
+                    localStorage.setItem(`project_task_${taskId}`, this.value);
+                }, 1000);
+            });
+        });
+        
+        // Загрузка сохраненного проекта при загрузке страницы
+        window.addEventListener('load', loadSavedProject);
+        
+        // Предупреждение о несохраненных данных
+        window.addEventListener('beforeunload', function(e) {
+            // Проверяем, есть ли несохраненные изменения
+            let hasChanges = false;
+            
+            for (let i = 1; i <= 8; i++) {
+                const savedValue = localStorage.getItem(`project_task_${i}`);
+                const currentValue = document.getElementById(`task${i}`).value;
+                
+                if (savedValue !== currentValue) {
+                    hasChanges = true;
+                    break;
+                }
+            }
+            
+            if (hasChanges) {
+                e.preventDefault();
+                e.returnValue = 'У вас есть несохраненные изменения в проекте. Вы уверены, что хотите покинуть страницу?';
+            }
+        });
+    </script>
+</body>
+</html>

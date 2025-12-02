@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модуль 7: Теоретическое тестирование | PostgreSQL Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Стили для тестирования */
+        .test-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .test-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .test-info {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .info-card i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .test-instructions {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .test-instructions h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions-list {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+        }
+        
+        .instructions-list li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .test-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .test-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .question-card {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .question-number {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .option {
+            background-color: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .option:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(51, 103, 145, 0.05);
+        }
+        
+        .option input[type="radio"] {
+            margin: 0;
+        }
+        
+        .option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(39, 174, 96, 0.1);
+        }
+        
+        .test-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .submit-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .submit-btn:hover {
+            background-color: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .reset-btn {
+            background-color: var(--gray-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .reset-btn:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .results-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .modal-header h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .score-breakdown {
+            margin: 1.5rem 0;
+        }
+        
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feedback {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-top: 1.5rem;
+        }
+        
+        .feedback h4 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .close-modal {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            margin-top: 1.5rem;
+            width: 100%;
+            font-weight: 600;
+        }
+        
+        .close-modal:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .timer-container {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+        }
+        
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            font-family: monospace;
+        }
+        
+        @media (max-width: 768px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-controls {
+                flex-direction: column;
+            }
+            
+            .submit-btn, .reset-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .test-info {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .info-card {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    
+    
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Тестовый заголовок -->
+        <div class="test-header">
+            <h1>Теоретическое тестирование</h1>
+            <p>Проверьте свои теоретические знания по всем модулям курса PostgreSQL</p>
+            
+            <div class="test-info">
+                <div class="info-card">
+                    <i class="fas fa-question-circle"></i>
+                    <h3>Вопросы</h3>
+                    <p>30 вопросов</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>Время</h3>
+                    <p>60 минут</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Проходной балл</h3>
+                    <p>70% и выше</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>Тип теста</h3>
+                    <p>Теоретический</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Таймер -->
+        <div class="timer-container">
+            <h3><i class="fas fa-clock"></i> Оставшееся время:</h3>
+            <div class="timer" id="timer">60:00</div>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+        </div>
+        
+        <!-- Инструкции -->
+        <div class="test-instructions">
+            <h3><i class="fas fa-info-circle"></i> Инструкции по прохождению тестирования</h3>
+            <ol class="instructions-list">
+                <li>Тест состоит из 30 теоретических вопросов по всем модулям курса</li>
+                <li>Для каждого вопроса выберите один правильный ответ из предложенных вариантов</li>
+                <li>У вас есть 60 минут на выполнение всех заданий</li>
+                <li>Для успешного прохождения теста необходимо набрать не менее 70% правильных ответов</li>
+                <li>Вы можете отметить вопросы для последующего просмотра</li>
+                <li>После завершения теста нажмите кнопку "Завершить тест" для получения результатов</li>
+                <li>Результаты теста будут показаны сразу после его завершения</li>
+            </ol>
+        </div>
+        
+        <!-- Тестовые вопросы -->
+        <section class="test-section">
+            <h2><i class="fas fa-book"></i> Теоретические вопросы</h2>
+            <p>Выберите один правильный ответ для каждого вопроса. Всего 30 вопросов.</p>
+            
+            <!-- Вопросы 1-10 -->
+            <div class="question-card" id="q1">
+                <div class="question-text">
+                    <span class="question-number">1</span>
+                    Что такое PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q1')">
+                        <input type="radio" name="q1" value="a">
+                        A) Объектно-реляционная система управления базами данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q1')">
+                        <input type="radio" name="q1" value="b">
+                        B) Язык программирования для веб-разработки
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q1')">
+                        <input type="radio" name="q1" value="c">
+                        C) Фреймворк для машинного обучения
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q1')">
+                        <input type="radio" name="q1" value="d">
+                        D) Операционная система
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q2">
+                <div class="question-text">
+                    <span class="question-number">2</span>
+                    Какой оператор SQL используется для выборки данных из таблицы?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q2')">
+                        <input type="radio" name="q2" value="a">
+                        A) SELECT
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q2')">
+                        <input type="radio" name="q2" value="b">
+                        B) GET
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q2')">
+                        <input type="radio" name="q2" value="c">
+                        C) FETCH
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q2')">
+                        <input type="radio" name="q2" value="d">
+                        D) RETRIEVE
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q3">
+                <div class="question-text">
+                    <span class="question-number">3</span>
+                    Что делает оператор WHERE в SQL запросе?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q3')">
+                        <input type="radio" name="q3" value="a">
+                        A) Фильтрует строки по условию
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q3')">
+                        <input type="radio" name="q3" value="b">
+                        B) Сортирует результаты
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q3')">
+                        <input type="radio" name="q3" value="c">
+                        C) Группирует данные
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q3')">
+                        <input type="radio" name="q3" value="d">
+                        D) Объединяет таблицы
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q4">
+                <div class="question-text">
+                    <span class="question-number">4</span>
+                    Какие типы JOIN существуют в SQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q4')">
+                        <input type="radio" name="q4" value="a">
+                        A) INNER, LEFT, RIGHT, FULL OUTER
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q4')">
+                        <input type="radio" name="q4" value="b">
+                        B) UNION, INTERSECT, EXCEPT
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q4')">
+                        <input type="radio" name="q4" value="c">
+                        C) SELECT, INSERT, UPDATE, DELETE
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q4')">
+                        <input type="radio" name="q4" value="d">
+                        D) AND, OR, NOT
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q5">
+                <div class="question-text">
+                    <span class="question-number">5</span>
+                    Для чего используется оператор GROUP BY?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q5')">
+                        <input type="radio" name="q5" value="a">
+                        A) Для группировки строк с одинаковыми значениями
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q5')">
+                        <input type="radio" name="q5" value="b">
+                        B) Для сортировки результатов
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q5')">
+                        <input type="radio" name="q5" value="c">
+                        C) Для фильтрации данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q5')">
+                        <input type="radio" name="q5" value="d">
+                        D) Для объединения таблиц
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q6">
+                <div class="question-text">
+                    <span class="question-number">6</span>
+                    Чем отличается HAVING от WHERE?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q6')">
+                        <input type="radio" name="q6" value="a">
+                        A) HAVING фильтрует группы, WHERE фильтрует строки
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q6')">
+                        <input type="radio" name="q6" value="b">
+                        B) WHERE используется с GROUP BY, HAVING без него
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q6')">
+                        <input type="radio" name="q6" value="c">
+                        C) Это синонимы
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q6')">
+                        <input type="radio" name="q6" value="d">
+                        D) HAVING работает быстрее
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q7">
+                <div class="question-text">
+                    <span class="question-number">7</span>
+                    Что такое оконные функции в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q7')">
+                        <input type="radio" name="q7" value="a">
+                        A) Функции, выполняющие вычисления над набором строк без группировки
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q7')">
+                        <input type="radio" name="q7" value="b">
+                        B) Функции для работы с окнами операционной системы
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q7')">
+                        <input type="radio" name="q7" value="c">
+                        C) Функции для создания графического интерфейса
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q7')">
+                        <input type="radio" name="q7" value="d">
+                        D) Функции для управления памятью
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q8">
+                <div class="question-text">
+                    <span class="question-number">8</span>
+                    Что такое CTE (Common Table Expressions)?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q8')">
+                        <input type="radio" name="q8" value="a">
+                        A) Временные результирующие наборы, которые можно использовать в основном запросе
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q8')">
+                        <input type="radio" name="q8" value="b">
+                        B) Постоянные таблицы в базе данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q8')">
+                        <input type="radio" name="q8" value="c">
+                        C) Тип данных для хранения больших текстов
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q8')">
+                        <input type="radio" name="q8" value="d">
+                        D) Метод шифрования данных
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q9">
+                <div class="question-text">
+                    <span class="question-number">9</span>
+                    Для чего используется команда EXPLAIN в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q9')">
+                        <input type="radio" name="q9" value="a">
+                        A) Для анализа плана выполнения запроса
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q9')">
+                        <input type="radio" name="q9" value="b">
+                        B) Для объяснения синтаксиса SQL
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q9')">
+                        <input type="radio" name="q9" value="c">
+                        C) Для создания резервных копий
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q9')">
+                        <input type="radio" name="q9" value="d">
+                        D) Для экспорта данных
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q10">
+                <div class="question-text">
+                    <span class="question-number">10</span>
+                    Какие типы индексов поддерживает PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q10')">
+                        <input type="radio" name="q10" value="a">
+                        A) B-tree, Hash, GiST, SP-GiST, GIN, BRIN
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q10')">
+                        <input type="radio" name="q10" value="b">
+                        B) Только B-tree
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q10')">
+                        <input type="radio" name="q10" value="c">
+                        C) B-tree и Hash
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q10')">
+                        <input type="radio" name="q10" value="d">
+                        D) Только GiST
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Вопросы 11-20 -->
+            <div class="question-card" id="q11">
+                <div class="question-text">
+                    <span class="question-number">11</span>
+                    Какой тип данных лучше всего подходит для хранения суммы денег в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q11')">
+                        <input type="radio" name="q11" value="a">
+                        A) NUMERIC или DECIMAL
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q11')">
+                        <input type="radio" name="q11" value="b">
+                        B) INTEGER
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q11')">
+                        <input type="radio" name="q11" value="c">
+                        C) FLOAT
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q11')">
+                        <input type="radio" name="q11" value="d">
+                        D) VARCHAR
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q12">
+                <div class="question-text">
+                    <span class="question-number">12</span>
+                    Что делает оператор COALESCE?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q12')">
+                        <input type="radio" name="q12" value="a">
+                        A) Возвращает первое ненулевое значение из списка
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q12')">
+                        <input type="radio" name="q12" value="b">
+                        B) Объединяет строки
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q12')">
+                        <input type="radio" name="q12" value="c">
+                        C) Преобразует типы данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q12')">
+                        <input type="radio" name="q12" value="d">
+                        D) Шифрует данные
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q13">
+                <div class="question-text">
+                    <span class="question-number">13</span>
+                    Какой JOIN возвращает все строки из обеих таблиц?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q13')">
+                        <input type="radio" name="q13" value="a">
+                        A) FULL OUTER JOIN
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q13')">
+                        <input type="radio" name="q13" value="b">
+                        B) INNER JOIN
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q13')">
+                        <input type="radio" name="q13" value="c">
+                        C) LEFT JOIN
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q13')">
+                        <input type="radio" name="q13" value="d">
+                        D) CROSS JOIN
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q14">
+                <div class="question-text">
+                    <span class="question-number">14</span>
+                    Для чего используется оператор UNION?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q14')">
+                        <input type="radio" name="q14" value="a">
+                        A) Для объединения результатов двух или более SELECT запросов
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q14')">
+                        <input type="radio" name="q14" value="b">
+                        B) Для объединения таблиц
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q14')">
+                        <input type="radio" name="q14" value="c">
+                        C) Для создания связей между таблицами
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q14')">
+                        <input type="radio" name="q14" value="d">
+                        D) Для обновления данных в нескольких таблицах
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q15">
+                <div class="question-text">
+                    <span class="question-number">15</span>
+                    Что такое рекурсивный CTE?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q15')">
+                        <input type="radio" name="q15" value="a">
+                        A) CTE, который ссылается на самого себя
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q15')">
+                        <input type="radio" name="q15" value="b">
+                        B) Быстрый способ создания временной таблицы
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q15')">
+                        <input type="radio" name="q15" value="c">
+                        C) CTE, который выполняется несколько раз
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q15')">
+                        <input type="radio" name="q15" value="d">
+                        D) CTE с параметрами
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q16">
+                <div class="question-text">
+                    <span class="question-number">16</span>
+                    Какой тип индекса лучше всего подходит для полнотекстового поиска в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q16')">
+                        <input type="radio" name="q16" value="a">
+                        A) GIN (Generalized Inverted Index)
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q16')">
+                        <input type="radio" name="q16" value="b">
+                        B) B-tree
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q16')">
+                        <input type="radio" name="q16" value="c">
+                        C) Hash
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q16')">
+                        <input type="radio" name="q16" value="d">
+                        D) BRIN
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q17">
+                <div class="question-text">
+                    <span class="question-number">17</span>
+                    Для чего используется команда VACUUM в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q17')">
+                        <input type="radio" name="q17" value="a">
+                        A) Для очистки и освобождения места, занимаемого "мертвыми" строками
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q17')">
+                        <input type="radio" name="q17" value="b">
+                        B) Для создания вакуума в базе данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q17')">
+                        <input type="radio" name="q17" value="c">
+                        C) Для ускорения запросов
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q17')">
+                        <input type="radio" name="q17" value="d">
+                        D) Для шифрования данных
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q18">
+                <div class="question-text">
+                    <span class="question-number">18</span>
+                    Какой оператор используется для вставки данных в таблицу?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q18')">
+                        <input type="radio" name="q18" value="a">
+                        A) INSERT
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q18')">
+                        <input type="radio" name="q18" value="b">
+                        B) ADD
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q18')">
+                        <input type="radio" name="q18" value="c">
+                        C) CREATE
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q18')">
+                        <input type="radio" name="q18" value="d">
+                        D) UPDATE
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q19">
+                <div class="question-text">
+                    <span class="question-number">19</span>
+                    Что такое триггер в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q19')">
+                        <input type="radio" name="q19" value="a">
+                        A) Функция, которая автоматически выполняется при определенном событии
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q19')">
+                        <input type="radio" name="q19" value="b">
+                        B) Тип индекса
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q19')">
+                        <input type="radio" name="q19" value="c">
+                        C) Способ соединения таблиц
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q19')">
+                        <input type="radio" name="q19" value="d">
+                        D) Метод оптимизации запросов
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q20">
+                <div class="question-text">
+                    <span class="question-number">20</span>
+                    Какой тип данных используется для хранения JSON в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q20')">
+                        <input type="radio" name="q20" value="a">
+                        A) JSON и JSONB
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q20')">
+                        <input type="radio" name="q20" value="b">
+                        B) TEXT
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q20')">
+                        <input type="radio" name="q20" value="c">
+                        C) VARCHAR
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q20')">
+                        <input type="radio" name="q20" value="d">
+                        D) XML
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Вопросы 21-30 -->
+            <div class="question-card" id="q21">
+                <div class="question-text">
+                    <span class="question-number">21</span>
+                    Что делает оператор LIMIT в SQL запросе?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q21')">
+                        <input type="radio" name="q21" value="a">
+                        A) Ограничивает количество возвращаемых строк
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q21')">
+                        <input type="radio" name="q21" value="b">
+                        B) Устанавливает минимальное значение
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q21')">
+                        <input type="radio" name="q21" value="c">
+                        C) Определяет лимит памяти
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q21')">
+                        <input type="radio" name="q21" value="d">
+                        D) Ограничивает время выполнения запроса
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q22">
+                <div class="question-text">
+                    <span class="question-number">22</span>
+                    Для чего используется оператор DISTINCT?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q22')">
+                        <input type="radio" name="q22" value="a">
+                        A) Для возврата уникальных значений
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q22')">
+                        <input type="radio" name="q22" value="b">
+                        B) Для сортировки по убыванию
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q22')">
+                        <input type="radio" name="q22" value="c">
+                        C) Для фильтрации NULL значений
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q22')">
+                        <input type="radio" name="q22" value="d">
+                        D) Для объединения таблиц
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q23">
+                <div class="question-text">
+                    <span class="question-number">23</span>
+                    Что такое первичный ключ (PRIMARY KEY) в таблице?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q23')">
+                        <input type="radio" name="q23" value="a">
+                        A) Уникальный идентификатор для каждой строки таблицы
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q23')">
+                        <input type="radio" name="q23" value="b">
+                        B) Поле для хранения паролей
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q23')">
+                        <input type="radio" name="q23" value="c">
+                        C) Основной текст в таблице
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q23')">
+                        <input type="radio" name="q23" value="d">
+                        D) Ключ для шифрования данных
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q24">
+                <div class="question-text">
+                    <span class="question-number">24</span>
+                    Какой оператор используется для изменения структуры таблицы?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q24')">
+                        <input type="radio" name="q24" value="a">
+                        A) ALTER TABLE
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q24')">
+                        <input type="radio" name="q24" value="b">
+                        B) MODIFY TABLE
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q24')">
+                        <input type="radio" name="q24" value="c">
+                        C) UPDATE TABLE
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q24')">
+                        <input type="radio" name="q24" value="d">
+                        D) CHANGE TABLE
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q25">
+                <div class="question-text">
+                    <span class="question-number">25</span>
+                    Что такое внешний ключ (FOREIGN KEY)?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q25')">
+                        <input type="radio" name="q25" value="a">
+                        A) Поле, которое ссылается на первичный ключ другой таблицы
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q25')">
+                        <input type="radio" name="q25" value="b">
+                        B) Зашифрованный ключ доступа
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q25')">
+                        <input type="radio" name="q25" value="c">
+                        C) Ключ для экспорта данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q25')">
+                        <input type="radio" name="q25" value="d">
+                        D) Основной ключ таблицы
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q26">
+                <div class="question-text">
+                    <span class="question-number">26</span>
+                    Для чего используется оператор BETWEEN?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q26')">
+                        <input type="radio" name="q26" value="a">
+                        A) Для выбора значений в определенном диапазоне
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q26')">
+                        <input type="radio" name="q26" value="b">
+                        B) Для сравнения двух таблиц
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q26')">
+                        <input type="radio" name="q26" value="c">
+                        C) Для создания промежуточных таблиц
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q26')">
+                        <input type="radio" name="q26" value="d">
+                        D) Для объединения запросов
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q27">
+                <div class="question-text">
+                    <span class="question-number">27</span>
+                    Что такое транзакция в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q27')">
+                        <input type="radio" name="q27" value="a">
+                        A) Последовательность операций, выполняемая как единое целое
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q27')">
+                        <input type="radio" name="q27" value="b">
+                        B) Процесс передачи данных между таблицами
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q27')">
+                        <input type="radio" name="q27" value="c">
+                        C) Метод шифрования данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q27')">
+                        <input type="radio" name="q27" value="d">
+                        D) Тип соединения таблиц
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q28">
+                <div class="question-text">
+                    <span class="question-number">28</span>
+                    Что делает команда CREATE INDEX?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q28')">
+                        <input type="radio" name="q28" value="a">
+                        A) Создает индекс для ускорения поиска по таблице
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q28')">
+                        <input type="radio" name="q28" value="b">
+                        B) Создает новую таблицу
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q28')">
+                        <input type="radio" name="q28" value="c">
+                        C) Создает базу данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q28')">
+                        <input type="radio" name="q28" value="d">
+                        D) Создает пользователя
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q29">
+                <div class="question-text">
+                    <span class="question-number">29</span>
+                    Какой оператор используется для удаления данных из таблицы?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q29')">
+                        <input type="radio" name="q29" value="a">
+                        A) DELETE
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q29')">
+                        <input type="radio" name="q29" value="b">
+                        B) DROP
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q29')">
+                        <input type="radio" name="q29" value="c">
+                        C) REMOVE
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q29')">
+                        <input type="radio" name="q29" value="d">
+                        D) ERASE
+                    </label>
+                </div>
+            </div>
+            
+            <div class="question-card" id="q30">
+                <div class="question-text">
+                    <span class="question-number">30</span>
+                    Что такое VIEW в PostgreSQL?
+                </div>
+                <div class="options-grid">
+                    <label class="option" onclick="selectOption(this, 'q30')">
+                        <input type="radio" name="q30" value="a">
+                        A) Виртуальная таблица, основанная на результате SELECT запроса
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q30')">
+                        <input type="radio" name="q30" value="b">
+                        B) Графическое представление данных
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q30')">
+                        <input type="radio" name="q30" value="c">
+                        C) Способ просмотра структуры таблицы
+                    </label>
+                    <label class="option" onclick="selectOption(this, 'q30')">
+                        <input type="radio" name="q30" value="d">
+                        D) Инструмент для визуализации запросов
+                    </label>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Элементы управления тестом -->
+        <div class="test-controls">
+            <button class="reset-btn" onclick="resetTest()">
+                <i class="fas fa-redo"></i> Начать заново
+            </button>
+            
+            <button class="submit-btn" id="submit" onclick="submitTest()">
+                <i class="fas fa-paper-plane"></i> Завершить тест
+            </button>
+        </div>
+    </main>
+    
+    <!-- Модальное окно с результатами -->
+    <div class="results-modal" id="resultsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Результаты тестирования</h2>
+                <p>Ваша оценка по теоретическому тестированию</p>
+            </div>
+            
+            <div class="score-display" id="finalScore">0%</div>
+            
+            <div class="score-breakdown">
+                <div class="score-item">
+                    <span>Правильных ответов:</span>
+                    <span id="correctAnswers">0/30</span>
+                </div>
+                <div class="score-item">
+                    <span>Процент правильных:</span>
+                    <span id="percentage">0%</span>
+                </div>
+                <div class="score-item">
+                    <span>Статус:</span>
+                    <span id="status">Не пройден</span>
+                </div>
+            </div>
+            
+            <div class="feedback" id="feedback">
+                <h4>Обратная связь:</h4>
+                <p id="feedbackText">Заполните все поля теста для получения оценки.</p>
+                <div id="recommendations" style="margin-top: 1rem;"></div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="close-modal" onclick="closeResults()">Закрыть</button>
+                <a href="module8.html" class="cta-button" style="flex: 1; text-align: center;">
+                    Перейти к проекту <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="script.js"></script>
+    <script>
+        // Таймер обратного отсчета
+        let timeLeft = 60 * 60; // 60 минут в секундах
+        const totalTime = 60 * 60;
+        const timerElement = document.getElementById('timer');
+        const progressElement = document.getElementById('progress');
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Обновление прогресс-бара
+            const progress = ((totalTime - timeLeft) / totalTime) * 100;
+            progressElement.style.width = `${progress}%`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                submitTest();
+            } else {
+                timeLeft--;
+            }
+        }
+        
+        const timerInterval = setInterval(updateTimer, 1000);
+        
+        // Выбор опции в вопросах
+        function selectOption(element, questionId) {
+            const questionCard = document.getElementById(questionId);
+            const options = questionCard.querySelectorAll('.option');
+            
+            options.forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            
+            // Найти радио-кнопку внутри элемента и отметить её
+            const radio = element.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+            }
+        }
+        
+        // Правильные ответы на теоретические вопросы
+        const correctAnswers = {
+            q1: 'a', q2: 'a', q3: 'a', q4: 'a', q5: 'a',
+            q6: 'a', q7: 'a', q8: 'a', q9: 'a', q10: 'a',
+            q11: 'a', q12: 'a', q13: 'a', q14: 'a', q15: 'a',
+            q16: 'a', q17: 'a', q18: 'a', q19: 'a', q20: 'a',
+            q21: 'a', q22: 'a', q23: 'a', q24: 'a', q25: 'a',
+            q26: 'a', q27: 'a', q28: 'a', q29: 'a', q30: 'a'
+        };
+        
+        // Сброс теста
+        function resetTest() {
+            if (confirm('Вы уверены, что хотите начать тест заново? Все ваши ответы будут потеряны.')) {
+                // Сброс радио-кнопок
+                document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.checked = false;
+                });
+                
+                // Сброс выбранных опций
+                document.querySelectorAll('.option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                // Сброс таймера
+                timeLeft = 60 * 60;
+                updateTimer();
+                
+                alert('Тест сброшен. Вы можете начать заново.');
+            }
+        }
+        
+        // Отправка теста
+        function submitTest() {
+            clearInterval(timerInterval);
+            
+            // Проверка теоретических вопросов
+            let correctCount = 0;
+            const totalQuestions = 30;
+            
+            for (let i = 1; i <= totalQuestions; i++) {
+                const questionId = `q${i}`;
+                const selectedOption = document.querySelector(`input[name="${questionId}"]:checked`);
+                
+                if (selectedOption && selectedOption.value === correctAnswers[questionId]) {
+                    correctCount++;
+                }
+            }
+            
+            // Расчет процента
+            const percentage = Math.round((correctCount / totalQuestions) * 100);
+            
+            // Отображение результатов
+            document.getElementById('correctAnswers').textContent = `${correctCount}/${totalQuestions}`;
+            document.getElementById('percentage').textContent = `${percentage}%`;
+            document.getElementById('finalScore').textContent = `${percentage}%`;
+            
+            // Определение статуса
+            const statusElement = document.getElementById('status');
+            if (percentage >= 70) {
+                statusElement.textContent = 'Пройден';
+                statusElement.style.color = 'var(--accent-color)';
+            } else {
+                statusElement.textContent = 'Не пройден';
+                statusElement.style.color = '#dc3545';
+            }
+            
+            // Генерация обратной связи
+            let feedbackText = '';
+            let recommendations = '';
+            
+            if (percentage >= 90) {
+                feedbackText = 'Отличный результат! Вы прекрасно усвоили теоретический материал курса PostgreSQL.';
+                recommendations = '<p><strong>Рекомендация:</strong> Переходите к практическому проекту для применения знаний на практике.</p>';
+            } else if (percentage >= 70) {
+                feedbackText = 'Хороший результат! Вы успешно прошли теоретическое тестирование.';
+                recommendations = '<p><strong>Рекомендация:</strong> Рекомендуем обратить внимание на вопросы, где были допущены ошибки, прежде чем переходить к практическому проекту.</p>';
+            } else if (percentage >= 50) {
+                feedbackText = 'Удовлетворительный результат. Есть пробелы в знаниях.';
+                recommendations = '<p><strong>Рекомендации:</strong><br>1. Повторите модули 1-3 (Основы SQL, фильтрация, JOIN)<br>2. Пройдите тест еще раз после повторения материала</p>';
+            } else {
+                feedbackText = 'Необходимо серьезно повторить материал курса.';
+                recommendations = '<p><strong>Рекомендации:</strong><br>1. Пройдите все модули курса заново<br>2. Выполните практические задания в каждом модуле<br>3. Обратитесь к дополнительным ресурсам</p>';
+            }
+            
+            document.getElementById('feedbackText').textContent = feedbackText;
+            document.getElementById('recommendations').innerHTML = recommendations;
+            
+            // Показ модального окна
+            document.getElementById('resultsModal').style.display = 'flex';
+            
+            // Прокрутка к верху страницы
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+        
+        // Закрытие модального окна
+        function closeResults() {
+            document.getElementById('resultsModal').style.display = 'none';
+        }
+        
+        // Сохранение ответов при обновлении страницы
+        window.addEventListener('beforeunload', function(e) {
+            // Проверяем, есть ли несохраненные ответы
+            let hasAnswers = false;
+            
+            for (let i = 1; i <= 30; i++) {
+                if (document.querySelector(`input[name="q${i}"]:checked`)) {
+                    hasAnswers = true;
+                    break;
+                }
+            }
+            
+            if (hasAnswers) {
+                e.preventDefault();
+                e.returnValue = 'У вас есть несохраненные ответы. Вы уверены, что хотите покинуть страницу?';
+            }
+        });
+        
+        // Инициализация таймера
+        updateTimer();
+    </script>
+</body>
+</html>
