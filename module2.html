@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модуль 2: Фильтрация и сортировка данных | PostgreSQL Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Модуль 2: Фильтрация и сортировка данных</h1>
+            <p>WHERE, ORDER BY, LIMIT, DISTINCT, работа с операторами сравнения и логическими операторами.</p>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <div class="module-content">
+            <!-- Основной контент -->
+            <div class="main-content">
+                <!-- Введение -->
+                <div class="lesson-card">
+                    <h2>Фильтрация данных с помощью WHERE</h2>
+                    <p>Оператор WHERE в PostgreSQL задаёт условие фильтрации строк на этапе выполнения запроса: он определяет, какие записи из указанных таблиц должны попасть в результат, а какие — быть исключены.
+
+Работает это так: после того как СУБД определила источники данных (FROM), она последовательно проверяет каждую строку на соответствие условию в WHERE. Если условие истинно (TRUE), строка включается в промежуточный результат; если ложно (FALSE) или неопределённо (UNKNOWN, например при сравнении с NULL) — отбрасывается.</p>
+                </div>
+                
+                <!-- Урок 1 -->
+                <div class="lesson-card">
+                    <h3>Операторы сравнения</h3>
+                    <p>Операторы сравнения в PostgreSQL — это базовые инструменты для формулирования условий, которые позволяют сопоставлять значения и определять логические отношения между ними. Они лежат в основе фильтрации данных (в WHERE), группировки (HAVING), объединений (JOIN) и других операций, где требуется проверка соотношений между величинами.
+
+Суть операторов сравнения — возвращать логическое значение (TRUE, FALSE или UNKNOWN при наличии NULL) на основе анализа двух операндов. Результат используется для принятия решений: включить ли строку в результат, выполнить ли действие, перейти ли по условию и т. п.
+
+Основные операторы сравнения образуют стандартный набор, понятный большинству СУБД:
+
+равенство (=) — проверяет, совпадают ли два значения. Важно: в PostgreSQL сравнение с NULL через = всегда даёт UNKNOWN, а не FALSE.
+
+неравенство (<> или !=) — определяет, различаются ли значения. Как и в случае с =, сравнение с NULL не даёт однозначного FALSE.
+
+больше (>) — истинно, если левое значение строго превышает правое.
+
+меньше (<) — истинно, если левое значение строго меньше правого.
+
+больше или равно (>=) — истинно, если левое значение не меньше правого.
+
+меньше или равно (<=) — истинно, если левое значение не превышает правое.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Равно (=)</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span>;
+
+<span class="sql-comment">-- Не равно (<> или !=)</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> department <> <span class="sql-string">'HR'</span>;
+
+<span class="sql-comment">-- Больше (>), Меньше (<)</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> salary > <span class="sql-number">50000</span>;
+
+<span class="sql-comment">-- Больше или равно (>=), Меньше или равно (<=)</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products 
+<span class="sql-keyword">WHERE</span> price <= <span class="sql-number">100</span>;
+
+<span class="sql-comment">-- BETWEEN (между двумя значениями)</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> salary <span class="sql-keyword">BETWEEN</span> <span class="sql-number">40000</span> <span class="sql-keyword">AND</span> <span class="sql-number">60000</span>;</code>
+                    </div>
+                    
+                  
+                </div>
+                
+                <!-- Урок 2 -->
+                <div class="lesson-card">
+                    <h3>Логические операторы</h3>
+                    <p>Логические операторы в PostgreSQL служат для комбинирования или инвертирования условий, формируя сложные логические выражения. Они работают с булевыми значениями (TRUE, FALSE, UNKNOWN) и определяют, будет ли выполнено то или иное действие (например, включена ли строка в результат запроса).
+
+Основные операторы:
+
+AND — возвращает TRUE только если оба условия истинны. Если одно ложно, результат ложен; если одно UNKNOWN, результат обычно UNKNOWN.
+
+OR — возвращает TRUE, если хотя бы одно из условий истинно. Ложен только когда оба условия ложны; при наличии UNKNOWN может давать UNKNOWN.
+
+NOT — инвертирует значение условия: превращает TRUE в FALSE, FALSE в TRUE, а UNKNOWN оставляет UNKNOWN.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- AND (И) - оба условия должны быть истинны</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span> <span class="sql-keyword">AND</span> salary > <span class="sql-number">60000</span>;
+
+<span class="sql-comment">-- OR (ИЛИ) - хотя бы одно условие должно быть истинно</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span> <span class="sql-keyword">OR</span> department = <span class="sql-string">'Engineering'</span>;
+
+<span class="sql-comment">-- NOT (НЕ) - отрицание условия</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> <span class="sql-keyword">NOT</span> department = <span class="sql-string">'HR'</span>;
+
+<span class="sql-comment">-- Комбинация операторов с использованием скобок</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> (department = <span class="sql-string">'IT'</span> <span class="sql-keyword">OR</span> department = <span class="sql-string">'Engineering'</span>)
+  <span class="sql-keyword">AND</span> salary > <span class="sql-number">50000</span>;</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 3 -->
+                <div class="lesson-card">
+                    <h3>Специальные операторы</h3>
+                    
+                    <h4>IN - проверка вхождения в список</h4>
+						  <p>Оператор IN в PostgreSQL позволяет проверить, совпадает ли значение выражения с одним из значений в заданном списке или результате подзапроса. Это компактный способ сформулировать условие типа «равно одному из перечисленных», заменяющий длинную цепочку сравнений через OR.</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Эквивалентно нескольким OR</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> department <span class="sql-keyword">IN</span> (<span class="sql-string">'IT'</span>, <span class="sql-string">'Engineering'</span>, <span class="sql-string">'Sales'</span>);
+
+<span class="sql-comment">-- С подзапросом</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products 
+<span class="sql-keyword">WHERE</span> category_id <span class="sql-keyword">IN</span> (
+    <span class="sql-keyword">SELECT</span> id <span class="sql-keyword">FROM</span> categories 
+    <span class="sql-keyword">WHERE</span> active = <span class="sql-keyword">TRUE</span>
+);</code>
+                    </div>
+                    
+                    <h4>LIKE - поиск по шаблону</h4>
+						  <p>Оператор LIKE в PostgreSQL предназначен для поиска строк по шаблону — он проверяет, соответствует ли значение столбца заданному образцу с использованием специальных символов‑заменителей. Это удобно, когда нужно найти данные, частично совпадающие с критерием (например, слова, начинающиеся на определённую подстроку).</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- % - любое количество любых символов</span>
+<span class="sql-comment">-- _ - один любой символ</span>
+
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> first_name <span class="sql-keyword">LIKE</span> <span class="sql-string">'J%'</span>; <span class="sql-comment">-- Имена, начинающиеся на J</span>
+
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> email <span class="sql-keyword">LIKE</span> <span class="sql-string">'%@gmail.com'</span>; <span class="sql-comment">-- Gmail адреса</span>
+
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> phone <span class="sql-keyword">LIKE</span> <span class="sql-string">'+7___'</span>; <span class="sql-comment">-- Номера с кодом +7 и 3 цифры</span></code>
+                    </div>
+                    
+                    <h4>IS NULL / IS NOT NULL - проверка на NULL</h4>
+						  <p>Операторы IS NULL и IS NOT NULL в PostgreSQL служат для явной проверки значения на отсутствие данных (NULL). В отличие от обычных операторов сравнения (=, <>), они корректно работают с NULL и возвращают однозначный булев результат.
+
+IS NULL возвращает TRUE, если значение столбца или выражения равно NULL, и FALSE — если значение присутствует. Используется, чтобы найти строки с пропущенными данными.
+
+IS NOT NULL возвращает TRUE, если значение есть (не NULL), и FALSE — если оно отсутствует. Позволяет отфильтровать строки, где столбец заполнен.</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Важно: для проверки NULL нельзя использовать =</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> middle_name <span class="sql-keyword">IS NULL</span>;
+
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">WHERE</span> termination_date <span class="sql-keyword">IS NOT NULL</span>;</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 4 -->
+                <div class="lesson-card">
+                    <h3>Сортировка и ограничение результатов</h3>
+                    
+                    <h4>ORDER BY - сортировка результатов</h4>
+						  <p>Оператор ORDER BY в PostgreSQL задаёт порядок сортировки результатов запроса. Он определяет, в какой последовательности будут выведены строки: по возрастанию (ASC) или по убыванию (DESC) значений указанных столбцов.
+
+Работает это так: после выполнения всех фильтров (WHERE, JOIN, GROUP BY и т. п.) система берёт итоговый набор строк и переупорядочивает его согласно перечисленным в ORDER BY столбцам. Сортировка идёт слева направо: сначала по первому указанному столбцу, затем — при равенстве значений первого — по второму и так далее.
+
+По умолчанию используется порядок ASC (по возрастанию): числа от меньшего к большему, строки — в лексикографическом порядке, даты — от ранних к поздним. Для обратного порядка указывают DESC.
+
+Можно сортировать по выражениям и псевдонимам столбцов, заданным в SELECT, а также по позициям (номерам) столбцов в выборке (хотя последний способ менее нагляден и реже применяется).</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Сортировка по возрастанию (ASC - по умолчанию)</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">ORDER BY</span> last_name;
+
+<span class="sql-comment">-- Сортировка по убыванию</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">ORDER BY</span> salary <span class="sql-keyword">DESC</span>;
+
+<span class="sql-comment">-- Сортировка по нескольким столбцам</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees 
+<span class="sql-keyword">ORDER BY</span> department <span class="sql-keyword">ASC</span>, salary <span class="sql-keyword">DESC</span>;</code>
+                    </div>
+                    
+                    <h4>LIMIT и OFFSET - ограничение результатов</h4>
+						  <p>Операторы LIMIT и OFFSET в PostgreSQL управляют объёмом и смещением возвращаемых строк в результате запроса. Они позволяют получать «порции» данных — например, для постраничной навигации или ограничения вывода.
+
+LIMIT задаёт максимальное число строк, которые должны быть возвращены. Например, LIMIT 10 вернёт не более 10 строк. Если строк в результате меньше, чем указано в LIMIT, будут возвращены все имеющиеся.
+
+OFFSET определяет, сколько строк нужно «пропустить» перед началом выдачи. Например, OFFSET 5 пропустит первые 5 строк и начнёт вывод с шестой. Без LIMIT после OFFSET будут возвращены все оставшиеся строки.
+
+Обычно их используют вместе: сначала применяется OFFSET (пропуск строк), затем LIMIT (ограничение числа возвращаемых строк). Например, OFFSET 10 LIMIT 5 пропустит первые 10 строк и вернёт следующие 5. Это типовой шаблон для реализации пагинации: каждая «страница» задаётся своим OFFSET при фиксированном LIMIT.</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- LIMIT - ограничение количества строк</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products 
+<span class="sql-keyword">ORDER BY</span> price <span class="sql-keyword">DESC</span>
+<span class="sql-keyword">LIMIT</span> <span class="sql-number">10</span>; <span class="sql-comment">-- Топ-10 самых дорогих продуктов</span>
+
+<span class="sql-comment">-- OFFSET - пропуск строк</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products 
+<span class="sql-keyword">ORDER BY</span> name
+<span class="sql-keyword">LIMIT</span> <span class="sql-number">20</span> <span class="sql-keyword">OFFSET</span> <span class="sql-number">40</span>; <span class="sql-comment">-- Строки 41-60 (пагинация)</span></code>
+                    </div>
+                    
+                    <h4>DISTINCT - уникальные значения</h4>
+						  <p>Оператор DISTINCT в PostgreSQL устраняет дубликаты из результата запроса: он оставляет только уникальные строки, исключая повторения по всем выбранным столбцам.
+
+Работает это так: после выполнения всех вычислений и фильтров (WHERE, JOIN и т. п.) система анализирует получившийся набор строк и «сворачивает» те, которые полностью совпадают по значениям во всех столбцах выборки. В итоге возвращаются лишь неповторяющиеся комбинации.
+
+DISTINCT применяется сразу после SELECT и охватывает все перечисленные столбцы. Например, SELECT DISTINCT a, b FROM table вернёт уникальные пары значений (a, b): если две строки имеют одинаковые a и b, в результат попадёт только одна из них.</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Получить уникальные значения столбца</span>
+<span class="sql-keyword">SELECT DISTINCT</span> department <span class="sql-keyword">FROM</span> employees;
+
+<span class="sql-comment">-- DISTINCT по нескольким столбцам</span>
+<span class="sql-keyword">SELECT DISTINCT</span> department, job_title <span class="sql-keyword">FROM</span> employees;</code>
+                    </div>
+                </div>
+                
+                <!-- Практическое задание -->
+                <div class="lesson-card">
+                    <h3><i class="fas fa-tasks"></i> Практическое задание</h3>
+                    <p>Используя таблицу "orders" со следующими полями: id, customer_id, order_date, total_amount, status</p>
+                    <ol>
+                        <li>Найдите все заказы за последний месяц</li>
+                        <li>Выведите топ-5 самых дорогих заказов</li>
+                        <li>Найдите заказы на сумму от 100 до 500 долларов</li>
+                        <li>Получите список уникальных статусов заказов</li>
+                        <li>Найдите заказы, где в комментарии есть слово "срочный"</li>
+                    </ol>
+                </div>
+					 <div class="lesson-card" style="background-color: #e8f5e9; border-left: 4px solid var(--accent-color);">
+                    
+                    <a href="index.html" class="cta-button" style="margin-top: 20px; display: inline-block;">
+                        <i class="fas fa-home"></i> Вернуться на главную
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Навигация по модулям -->
+                <div class="module-nav">
+                    <h3>Модули курса</h3>
+                    <ul>
+                        <li><a href="module1.html"><i class="fas fa-database"></i> Модуль 1: Основы PostgreSQL</a></li>
+                        <li><a href="module2.html" class="active"><i class="fas fa-filter"></i> Модуль 2: Фильтрация</a></li>
+                        <li><a href="module3.html"><i class="fas fa-project-diagram"></i> Модуль 3: JOINs</a></li>
+                        <li><a href="module4.html"><i class="fas fa-calculator"></i> Модуль 4: Агрегация</a></li>
+                        <li><a href="module5.html"><i class="fas fa-code"></i> Модуль 5: Расширенные возможности</a></li>
+                        <li><a href="module6.html"><i class="fas fa-tachometer-alt"></i> Модуль 6: Оптимизация</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Дополнительные ресурсы -->
+              
+            </aside>
+        </div>
+        
+        <!-- Навигационные кнопки -->
+        <div class="nav-buttons">
+            <a href="module1.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Предыдущий модуль</a>
+            <a href="module3.html" class="nav-button">Следующий модуль <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </main>
+    
+    
+    
+    <script src="script.js"></script>
+</body>
+</html>

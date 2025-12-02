@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модуль 4: Агрегатные функции и группировка | PostgreSQL Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+   
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Модуль 4: Агрегатные функции и группировка</h1>
+            <p>GROUP BY, HAVING, агрегатные функции (COUNT, SUM, AVG, MIN, MAX), работа с оконными функциями.</p>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <div class="module-content">
+            <!-- Основной контент -->
+            <div class="main-content">
+                <!-- Введение -->
+                <div class="lesson-card">
+                    <h2>Агрегатные функции</h2>
+                    <p>Агрегатные функции выполняют вычисления над набором строк и возвращают одно значение. Они используются для суммирования, подсчета, нахождения среднего и других операций над группами данных.</p>
+                </div>
+                
+                <!-- Урок 1 -->
+                <div class="lesson-card">
+                    <h3>Базовые агрегатные функции</h3>
+                    <p>Агрегатные функции — это встроенные функции в языках запросов (например, PostgreSQL), которые выполняют вычисления над набором значений и возвращают одно результирующее значение. Они позволяют обобщать данные: подсчитывать количество записей, находить сумму, среднее, минимальное или максимальное значение в группе строк. Обычно используются с оператором GROUP BY для группировки данных по определённым критериям, но могут применяться и к всему набору данных целиком.</p>
+						  <p>Разделяют следующие базовые агрегатные функции:</p>
+						  <ul>
+							<oi>
+								1. COUNT() — подсчитывает количество строк или ненулевых значений в столбце.
+
+COUNT(*) — общее число строк в таблице;
+
+COUNT(column_name) — количество записей, где значение в указанном столбце не равно NULL.
+							</oi><br>
+							<oi>
+								2. SUM() — вычисляет сумму всех значений в числовом столбце (например, общая выручка или количество товара).
+							</oi><br>
+							<oi>
+								3. AVG() — находит среднее арифметическое значений в столбце (игнорирует NULL).
+							</oi><br>
+							<oi>
+								4. MIN() — определяет минимальное значение в столбце (работает с числами, датами и строками).
+							</oi><br>
+							<oi>
+								5. MAX() — находит максимальное значение в столбце (также поддерживает числа, даты и строки).
+							</oi><br>
+						  </ul>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- COUNT - подсчет строк</span>
+<span class="sql-keyword">SELECT</span> <span class="sql-function">COUNT</span>(*) <span class="sql-keyword">FROM</span> employees; <span class="sql-comment">-- Все строки</span>
+<span class="sql-keyword">SELECT</span> <span class="sql-function">COUNT</span>(department) <span class="sql-keyword">FROM</span> employees; <span class="sql-comment">-- Не NULL значения</span>
+<span class="sql-keyword">SELECT</span> <span class="sql-function">COUNT</span>(<span class="sql-keyword">DISTINCT</span> department) <span class="sql-keyword">FROM</span> employees; <span class="sql-comment">-- Уникальные значения</span>
+
+<span class="sql-comment">-- SUM - сумма значений</span>
+<span class="sql-keyword">SELECT</span> <span class="sql-function">SUM</span>(salary) <span class="sql-keyword">FROM</span> employees;
+<span class="sql-keyword">SELECT</span> <span class="sql-function">SUM</span>(quantity * price) <span class="sql-keyword">FROM</span> order_items; <span class="sql-comment">-- С выражением</span>
+
+<span class="sql-comment">-- AVG - среднее значение</span>
+<span class="sql-keyword">SELECT</span> <span class="sql-function">AVG</span>(salary) <span class="sql-keyword">FROM</span> employees;
+<span class="sql-keyword">SELECT</span> <span class="sql-function">AVG</span>(<span class="sql-function">COALESCE</span>(bonus, <span class="sql-number">0</span>)) <span class="sql-keyword">FROM</span> employees; <span class="sql-comment">-- С обработкой NULL</span>
+
+<span class="sql-comment">-- MIN и MAX - минимальное и максимальное значения</span>
+<span class="sql-keyword">SELECT</span> <span class="sql-function">MIN</span>(salary), <span class="sql-function">MAX</span>(salary) <span class="sql-keyword">FROM</span> employees;
+<span class="sql-keyword">SELECT</span> <span class="sql-function">MIN</span>(order_date), <span class="sql-function">MAX</span>(order_date) <span class="sql-keyword">FROM</span> orders;</code>
+                    </div>
+                    
+                   
+                </div>
+                
+                <!-- Урок 2 -->
+                <div class="lesson-card">
+                    <h3>GROUP BY - группировка данных</h3>
+                    <p>GROUP BY группирует строки, имеющие одинаковые значения в указанных столбцах, обычно для применения агрегатных функций к каждой группе.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Группировка по одному столбцу</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">COUNT</span>(*) <span class="sql-keyword">AS</span> employee_count,
+    <span class="sql-function">AVG</span>(salary) <span class="sql-keyword">AS</span> avg_salary
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department;
+
+<span class="sql-comment">-- Группировка по нескольким столбцам</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    job_title,
+    <span class="sql-function">COUNT</span>(*) <span class="sql-keyword">AS</span> count,
+    <span class="sql-function">SUM</span>(salary) <span class="sql-keyword">AS</span> total_salary
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department, job_title;
+
+<span class="sql-comment">-- GROUP BY с выражениями</span>
+<span class="sql-keyword">SELECT</span> 
+    <span class="sql-function">EXTRACT</span>(YEAR <span class="sql-keyword">FROM</span> hire_date) <span class="sql-keyword">AS</span> hire_year,
+    <span class="sql-function">COUNT</span>(*) <span class="sql-keyword">AS</span> hires_count
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> <span class="sql-function">EXTRACT</span>(YEAR <span class="sql-keyword">FROM</span> hire_date);</code>
+                    </div>
+                    
+                    <p><strong>Важно:</strong> В SELECT можно использовать только столбцы, указанные в GROUP BY, и агрегатные функции.</p>
+                </div>
+                
+                <!-- Урок 3 -->
+                <div class="lesson-card">
+                    <h3>HAVING - фильтрация групп</h3>
+                    <p>HAVING фильтрует группы после применения GROUP BY, аналогично тому, как WHERE фильтрует строки до группировки.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Фильтрация групп по агрегатным значениям</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">COUNT</span>(*) <span class="sql-keyword">AS</span> employee_count,
+    <span class="sql-function">AVG</span>(salary) <span class="sql-keyword">AS</span> avg_salary
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department
+<span class="sql-keyword">HAVING</span> <span class="sql-function">COUNT</span>(*) > <span class="sql-number">5</span>; <span class="sql-comment">-- Отделы с более чем 5 сотрудниками</span>
+
+<span class="sql-comment">-- HAVING с несколькими условиями</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">AVG</span>(salary) <span class="sql-keyword">AS</span> avg_salary,
+    <span class="sql-function">MAX</span>(salary) <span class="sql-keyword">AS</span> max_salary
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department
+<span class="sql-keyword">HAVING</span> 
+    <span class="sql-function">AVG</span>(salary) > <span class="sql-number">50000</span> 
+    <span class="sql-keyword">AND</span> <span class="sql-function">MAX</span>(salary) < <span class="sql-number">100000</span>;
+
+<span class="sql-comment">-- WHERE и HAVING вместе</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">AVG</span>(salary) <span class="sql-keyword">AS</span> avg_salary
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">WHERE</span> hire_date > <span class="sql-string">'2020-01-01'</span> <span class="sql-comment">-- Фильтрация строк до группировки</span>
+<span class="sql-keyword">GROUP BY</span> department
+<span class="sql-keyword">HAVING</span> <span class="sql-function">AVG</span>(salary) > <span class="sql-number">45000</span>; <span class="sql-comment">-- Фильтрация групп после группировки</span></code>
+                    </div>
+                    
+                    <p><strong>Разница WHERE vs HAVING:</strong></p>
+                    <ul>
+                        <li><strong>WHERE</strong> фильтрует строки до группировки</li>
+                        <li><strong>HAVING</strong> фильтрует группы после группировки</li>
+                        <li>В WHERE нельзя использовать агрегатные функции</li>
+                        <li>В HAVING можно использовать агрегатные функции</li>
+                    </ul>
+                </div>
+                
+                <!-- Урок 4 -->
+                <div class="lesson-card">
+                    <h3>Расширенные агрегатные функции</h3>
+                    
+                    <h4>STRING_AGG - объединение строк</h4>
+						  <p>Оператор STRING_AGG в PostgreSQL объединяет значения из нескольких строк в одну строку, разделяя их заданным разделителем.
+
+Функция берёт значения указанного столбца из группы строк, склеивает их в единую строку и вставляет между ними разделитель (заданный в аргументе функции). Можно также задать порядок объединения значений.</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Объединение имен сотрудников по отделам</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">STRING_AGG</span>(name, <span class="sql-string">', '</span> <span class="sql-keyword">ORDER BY</span> name) <span class="sql-keyword">AS</span> employees_list
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department;
+
+<span class="sql-comment">-- С разделителем и ограничением</span>
+<span class="sql-keyword">SELECT</span> 
+    category,
+    <span class="sql-function">STRING_AGG</span>(product_name, <span class="sql-string">' | '</span>) <span class="sql-keyword">AS</span> products
+<span class="sql-keyword">FROM</span> products
+<span class="sql-keyword">GROUP BY</span> category;</code>
+                    </div>
+                    
+                    <h4>ARRAY_AGG - создание массивов</h4>
+						  <p>
+							ARRAY_AGG — агрегатная функция в PostgreSQL, которая собирает значения из нескольких строк в единый массив.
+
+ 							Функция берёт значения указанного столбца из группы строк и формирует из них массив, сохраняя порядок (если задан). В результате вместо множества отдельных строк получается одна строка с массивом, содержащим все исходные значения.
+						  </p>
+						  
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Создание массива значений</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">ARRAY_AGG</span>(name <span class="sql-keyword">ORDER BY</span> hire_date) <span class="sql-keyword">AS</span> employees_array
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department;
+
+<span class="sql-comment">-- JSON_AGG для создания JSON массивов</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">JSON_AGG</span>(<span class="sql-function">JSON_BUILD_OBJECT</span>(<span class="sql-string">'name'</span>, name, <span class="sql-string">'salary'</span>, salary)) <span class="sql-keyword">AS</span> employees_json
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department;</code>
+                    </div>
+                    
+                    <h4>Статистические функции</h4>
+						  <p>
+							Статистические функции в PostgreSQL — это набор встроенных агрегатных операций для базового статистического анализа данных прямо в запросах. Они обрабатывают множество строк и возвращают одно обобщённое значение. Например: 
+						  </p>
+						  <ol>
+							<li>
+								AVG() — среднее арифметическое (сумма значений, делённая на их количество);
+							</li>
+							<li>
+								SUM() — сумма всех значений в столбце;
+							</li>
+							<li>
+								COUNT() — количество строк или ненулевых значений;
+							</li>
+							<li>
+								MIN() и MAX() — минимальное и максимальное значения;
+							</li>
+							<li>
+								STDDEV() (или STDEV()) — стандартное отклонение (мера разброса значений вокруг среднего);
+							</li>
+						  </ol>
+						  <p>И тому подобные функции</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Статистические функции</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">STDDEV</span>(salary) <span class="sql-keyword">AS</span> salary_stddev, <span class="sql-comment">-- Стандартное отклонение</span>
+    <span class="sql-function">VARIANCE</span>(salary) <span class="sql-keyword">AS</span> salary_variance, <span class="sql-comment">-- Дисперсия</span>
+    <span class="sql-function">PERCENTILE_CONT</span>(<span class="sql-number">0.5</span>) <span class="sql-keyword">WITHIN GROUP</span> (<span class="sql-keyword">ORDER BY</span> salary) <span class="sql-keyword">AS</span> median_salary <span class="sql-comment">-- Медиана</span>
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department;</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 5 -->
+                <div class="lesson-card">
+                    <h3>Оконные функции (Window Functions)</h3>
+                    <p>
+							Оконные функции в PostgreSQL — это инструмент для вычислений по набору строк («окну»), связанных с текущей строкой, без сворачивания результата в одну запись (в отличие от агрегатных функций). Они позволяют сохранять детализацию исходных данных и одновременно рассчитывать сводные показатели в контексте.
+
+Как это работает: для каждой строки запроса определяется «окно» — набор строк, участвующих в вычислении. Функция применяет операцию к этому окну и возвращает результат для текущей строки, не меняя общее число строк в результате.
+						  </p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Базовый синтаксис оконных функций</span>
+<span class="sql-keyword">SELECT</span> 
+    name,
+    department,
+    salary,
+    <span class="sql-function">AVG</span>(salary) <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> department) <span class="sql-keyword">AS</span> avg_department_salary,
+    <span class="sql-function">SUM</span>(salary) <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> department) <span class="sql-keyword">AS</span> total_department_salary
+<span class="sql-keyword">FROM</span> employees;
+
+<span class="sql-comment">-- ROW_NUMBER, RANK, DENSE_RANK</span>
+<span class="sql-keyword">SELECT</span> 
+    name,
+    department,
+    salary,
+    <span class="sql-function">ROW_NUMBER</span>() <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> department <span class="sql-keyword">ORDER BY</span> salary <span class="sql-keyword">DESC</span>) <span class="sql-keyword">AS</span> row_num,
+    <span class="sql-function">RANK</span>() <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> department <span class="sql-keyword">ORDER BY</span> salary <span class="sql-keyword">DESC</span>) <span class="sql-keyword">AS</span> rank,
+    <span class="sql-function">DENSE_RANK</span>() <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> department <span class="sql-keyword">ORDER BY</span> salary <span class="sql-keyword">DESC</span>) <span class="sql-keyword">AS</span> dense_rank
+<span class="sql-keyword">FROM</span> employees;</code>
+                    </div>
+                    
+                    <h4>Скользящие агрегаты</h4>
+						  <p>
+							Скользящие агрегаты в PostgreSQL — это вычисление агрегатных функций (суммы, среднего и т. п.) в динамическом окне строк относительно текущей строки. Вместо обработки всей группы сразу окно «скользит» по данным, на каждом шаге захватывая новый набор строк (например, «текущая строка + две предыдущие»).
+
+Ключевой инструмент — оконные функции с рамками окна в OVER(). Рамки задаются через:
+
+ROWS BETWEEN n PRECEDING AND CURRENT ROW (n предыдущих + текущая);
+
+ROWS BETWEEN n PRECEDING AND m FOLLOWING (n предыдущих + m следующих);
+
+RANGE (по значениям столбца, а не по числу строк) и др.
+						  </p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Скользящее среднее</span>
+<span class="sql-keyword">SELECT</span> 
+    order_date,
+    daily_sales,
+    <span class="sql-function">AVG</span>(daily_sales) <span class="sql-keyword">OVER</span> (
+        <span class="sql-keyword">ORDER BY</span> order_date 
+        <span class="sql-keyword">ROWS BETWEEN</span> <span class="sql-number">6</span> <span class="sql-keyword">PRECEDING</span> <span class="sql-keyword">AND</span> <span class="sql-keyword">CURRENT ROW</span>
+    ) <span class="sql-keyword">AS</span> moving_avg_7days
+<span class="sql-keyword">FROM</span> daily_sales;
+
+<span class="sql-comment">-- Накопительная сумма</span>
+<span class="sql-keyword">SELECT</span> 
+    employee_id,
+    salary_date,
+    amount,
+    <span class="sql-function">SUM</span>(amount) <span class="sql-keyword">OVER</span> (
+        <span class="sql-keyword">PARTITION BY</span> employee_id 
+        <span class="sql-keyword">ORDER BY</span> salary_date 
+        <span class="sql-keyword">ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</span>
+    ) <span class="sql-keyword">AS</span> cumulative_salary
+<span class="sql-keyword">FROM</span> salaries;</code>
+                    </div>
+                    
+                    <h4>Функции смещения</h4>
+						  <p>
+							Функции смещения (window offset functions) в PostgreSQL позволяют обращаться к значениям из других строк относительно текущей в рамках определённого окна. Они помогают сравнивать текущую строку с предшествующими или последующими, не прибегая к самосоединениям.
+
+Основные функции:<br>
+
+LAG(expression [, offset [, default]]) — берёт значение из строки, отстоящей на offset позиций назад от текущей (по умолчанию offset = 1, default = NULL).<br>
+
+LEAD(expression [, offset [, default]]) — берёт значение из строки, отстоящей на offset позиций вперёд от текущей.<br>
+
+FIRST_VALUE(expression) — возвращает значение из первой строки окна.<br>
+
+LAST_VALUE(expression) — возвращает значение из последней строки окна.<br>
+
+NTH_VALUE(expression, n) — возвращает значение из n‑й строки окна (если такая есть).
+						  </p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- LAG и LEAD - доступ к предыдущим/следующим строкам</span>
+<span class="sql-keyword">SELECT</span> 
+    month,
+    revenue,
+    <span class="sql-function">LAG</span>(revenue, <span class="sql-number">1</span>) <span class="sql-keyword">OVER</span> (<span class="sql-keyword">ORDER BY</span> month) <span class="sql-keyword">AS</span> prev_month_revenue,
+    <span class="sql-function">LEAD</span>(revenue, <span class="sql-number">1</span>) <span class="sql-keyword">OVER</span> (<span class="sql-keyword">ORDER BY</span> month) <span class="sql-keyword">AS</span> next_month_revenue,
+    revenue - <span class="sql-function">LAG</span>(revenue, <span class="sql-number">1</span>) <span class="sql-keyword">OVER</span> (<span class="sql-keyword">ORDER BY</span> month) <span class="sql-keyword">AS</span> monthly_change
+<span class="sql-keyword">FROM</span> monthly_revenue;
+
+<span class="sql-comment">-- FIRST_VALUE и LAST_VALUE</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    name,
+    salary,
+    <span class="sql-function">FIRST_VALUE</span>(name) <span class="sql-keyword">OVER</span> (
+        <span class="sql-keyword">PARTITION BY</span> department 
+        <span class="sql-keyword">ORDER BY</span> salary <span class="sql-keyword">DESC</span>
+    ) <span class="sql-keyword">AS</span> highest_paid_employee
+<span class="sql-keyword">FROM</span> employees;</code>
+                    </div>
+                </div>
+                
+                <!-- Практическое задание -->
+                <div class="lesson-card">
+                    <h3><i class="fas fa-tasks"></i> Практическое задание</h3>
+                    <p>Используя таблицу "sales" со следующими полями: id, product_id, sale_date, quantity, price, region</p>
+                    <ol>
+                        <li>Рассчитайте общую выручку по каждому продукту</li>
+                        <li>Найдите среднее количество продаж по регионам</li>
+                        <li>Определите топ-3 продукта по выручке в каждом регионе</li>
+                        <li>Рассчитайте скользящее среднее выручки за 7 дней</li>
+                        <li>Найдите долю каждого продукта в общей выручке</li>
+                        <li>Определите продукты, чья выручка выше средней по их категории</li>
+                    </ol>
+                </div>
+					 <div class="lesson-card" style="background-color: #e8f5e9; border-left: 4px solid var(--accent-color);">
+                    
+                    <a href="index.html" class="cta-button" style="margin-top: 20px; display: inline-block;">
+                        <i class="fas fa-home"></i> Вернуться на главную
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Навигация по модулям -->
+                <div class="module-nav">
+                    <h3>Модули курса</h3>
+                    <ul>
+                        <li><a href="module1.html"><i class="fas fa-database"></i> Модуль 1: Основы PostgreSQL</a></li>
+                        <li><a href="module2.html"><i class="fas fa-filter"></i> Модуль 2: Фильтрация</a></li>
+                        <li><a href="module3.html"><i class="fas fa-project-diagram"></i> Модуль 3: JOINs</a></li>
+                        <li><a href="module4.html" class="active"><i class="fas fa-calculator"></i> Модуль 4: Агрегация</a></li>
+                        <li><a href="module5.html"><i class="fas fa-code"></i> Модуль 5: Расширенные возможности</a></li>
+                        <li><a href="module6.html"><i class="fas fa-tachometer-alt"></i> Модуль 6: Оптимизация</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Дополнительные ресурсы -->
+              
+            </aside>
+        </div>
+        
+        <!-- Навигационные кнопки -->
+        <div class="nav-buttons">
+            <a href="module3.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Предыдущий модуль</a>
+            <a href="module5.html" class="nav-button">Следующий модуль <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </main>
+    
+  
+    
+    <script src="script.js"></script>
+</body>
+</html>

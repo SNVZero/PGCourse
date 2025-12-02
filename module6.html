@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модуль 6: Оптимизация запросов | PostgreSQL Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+   
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Модуль 6: Оптимизация запросов</h1>
+            <p>Индексы, EXPLAIN ANALYZE, планирование запросов, оптимизация производительности, мониторинг.</p>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <div class="module-content">
+            <!-- Основной контент -->
+            <div class="main-content">
+                <!-- Введение -->
+                <div class="lesson-card">
+                    <h2>Введение в оптимизацию запросов</h2>
+                    <p>Оптимизация запросов - это процесс улучшения производительности PostgreSQL-запросов для уменьшения времени выполнения и потребления ресурсов.</p>
+                    <p>В PostgreSQL оптимизация включает понимание планировщика запросов, использование индексов, анализ планов выполнения и настройку параметров сервера.</p>
+                </div>
+                
+                <!-- Урок 1 -->
+                <div class="lesson-card">
+                    <h3>EXPLAIN и EXPLAIN ANALYZE</h3>
+                    <p>EXPLAIN показывает план выполнения запроса, а EXPLAIN ANALYZE выполняет запрос и показывает фактическую статистику.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Показать план запроса</span>
+<span class="sql-keyword">EXPLAIN</span> <span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees <span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span>;
+
+<span class="sql-comment">-- Показать план с фактическим выполнением</span>
+<span class="sql-keyword">EXPLAIN ANALYZE</span> <span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees <span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span>;
+
+<span class="sql-comment">-- Детальный анализ с форматами</span>
+<span class="sql-keyword">EXPLAIN</span> (ANALYZE, VERBOSE, BUFFERS, FORMAT JSON)
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees <span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span>;
+
+<span class="sql-comment">-- Сравнение двух запросов</span>
+<span class="sql-keyword">EXPLAIN ANALYZE</span> 
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> orders <span class="sql-keyword">WHERE</span> EXTRACT(YEAR <span class="sql-keyword">FROM</span> order_date) = <span class="sql-number">2023</span>;
+
+<span class="sql-keyword">EXPLAIN ANALYZE</span> 
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> orders <span class="sql-keyword">WHERE</span> order_date >= <span class="sql-string">'2023-01-01'</span> <span class="sql-keyword">AND</span> order_date < <span class="sql-string">'2024-01-01'</span>;</code>
+                    </div>
+                    
+                    <h4>Ключевые метрики в EXPLAIN ANALYZE:</h4>
+                    <ul>
+                        <li><strong>cost</strong> - оценка стоимости операции</li>
+                        <li><strong>rows</strong> - оценка количества строк</li>
+                        <li><strong>width</strong> - средняя ширина строки в байтах</li>
+                        <li><strong>actual time</strong> - фактическое время выполнения</li>
+                        <li><strong>loops</strong> - количество циклов выполнения</li>
+                    </ul>
+                    
+                  
+                </div>
+                
+                <!-- Урок 2 -->
+                <div class="lesson-card">
+                    <h3>Индексы в PostgreSQL</h3>
+                    
+                    <h4>Типы индексов</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- B-tree индекс (по умолчанию)</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_employees_department <span class="sql-keyword">ON</span> employees (department);
+
+<span class="sql-comment">-- Составной индекс</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_employees_dept_salary <span class="sql-keyword">ON</span> employees (department, salary);
+
+<span class="sql-comment">-- Уникальный индекс</span>
+<span class="sql-keyword">CREATE UNIQUE INDEX</span> idx_employees_email <span class="sql-keyword">ON</span> employees (email);
+
+<span class="sql-comment">-- Частичный индекс (только для определенных строк)</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_active_employees <span class="sql-keyword">ON</span> employees (department) 
+<span class="sql-keyword">WHERE</span> active = <span class="sql-keyword">true</span>;
+
+<span class="sql-comment">-- Индекс по выражению</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_lower_email <span class="sql-keyword">ON</span> employees (<span class="sql-function">LOWER</span>(email));</code>
+                    </div>
+                    
+                    <h4>Специализированные индексы</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- GIN индекс для полнотекстового поиска и массивов</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_articles_search <span class="sql-keyword">ON</span> articles <span class="sql-keyword">USING GIN</span> (search_vector);
+
+<span class="sql-comment">-- GiST индекс для геospatial данных</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_locations_geom <span class="sql-keyword">ON</span> locations <span class="sql-keyword">USING GIST</span> (geom);
+
+<span class="sql-comment">-- BRIN индекс для больших таблиц с коррелированными данными</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_orders_date <span class="sql-keyword">ON</span> orders <span class="sql-keyword">USING BRIN</span> (order_date);
+
+<span class="sql-comment">-- Hash индекс для точных сравнений</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_products_code <span class="sql-keyword">ON</span> products <span class="sql-keyword">USING HASH</span> (product_code);</code>
+                    </div>
+                    
+                    <h4>Управление индексами</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Перестроение индекса</span>
+<span class="sql-keyword">REINDEX INDEX</span> idx_employees_department;
+<span class="sql-keyword">REINDEX TABLE</span> employees;
+<span class="sql-keyword">REINDEX DATABASE</span> mydb;
+
+<span class="sql-comment">-- Параллельное построение индекса</span>
+<span class="sql-keyword">CREATE INDEX</span> CONCURRENTLY idx_orders_customer <span class="sql-keyword">ON</span> orders (customer_id);
+
+<span class="sql-comment">-- Анализ использования индексов</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> pg_stat_user_indexes;
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> pg_indexes <span class="sql-keyword">WHERE</span> tablename = <span class="sql-string">'employees'</span>;</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 3 -->
+                <div class="lesson-card">
+                    <h3>Оптимизация запросов</h3>
+                    
+                    <h4>Общие принципы оптимизации</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Плохо: функция в WHERE</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> orders 
+<span class="sql-keyword">WHERE</span> <span class="sql-function">DATE_PART</span>(<span class="sql-string">'year'</span>, order_date) = <span class="sql-number">2023</span>;
+
+<span class="sql-comment">-- Хорошо: диапазон в WHERE</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> orders 
+<span class="sql-keyword">WHERE</span> order_date >= <span class="sql-string">'2023-01-01'</span> <span class="sql-keyword">AND</span> order_date < <span class="sql-string">'2024-01-01'</span>;
+
+<span class="sql-comment">-- Плохо: SELECT *</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees <span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span>;
+
+<span class="sql-comment">-- Хорошо: только нужные столбцы</span>
+<span class="sql-keyword">SELECT</span> id, name, email <span class="sql-keyword">FROM</span> employees <span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span>;
+
+<span class="sql-comment">-- Плохо: IN с подзапросом</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products 
+<span class="sql-keyword">WHERE</span> category_id <span class="sql-keyword">IN</span> (<span class="sql-keyword">SELECT</span> id <span class="sql-keyword">FROM</span> categories <span class="sql-keyword">WHERE</span> active = <span class="sql-keyword">true</span>);
+
+<span class="sql-comment">-- Хорошо: JOIN</span>
+<span class="sql-keyword">SELECT</span> p.* 
+<span class="sql-keyword">FROM</span> products p
+<span class="sql-keyword">JOIN</span> categories c <span class="sql-keyword">ON</span> p.category_id = c.id
+<span class="sql-keyword">WHERE</span> c.active = <span class="sql-keyword">true</span>;</code>
+                    </div>
+                    
+                    <h4>Оптимизация JOIN</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Использование EXISTS вместо IN для проверки существования</span>
+<span class="sql-comment">-- Плохо</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> customers 
+<span class="sql-keyword">WHERE</span> id <span class="sql-keyword">IN</span> (<span class="sql-keyword">SELECT</span> customer_id <span class="sql-keyword">FROM</span> orders);
+
+<span class="sql-comment">-- Хорошо</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> customers c
+<span class="sql-keyword">WHERE</span> <span class="sql-keyword">EXISTS</span> (<span class="sql-keyword">SELECT</span> <span class="sql-number">1</span> <span class="sql-keyword">FROM</span> orders o <span class="sql-keyword">WHERE</span> o.customer_id = c.id);
+
+<span class="sql-comment">-- Оптимизация порядка JOIN</span>
+<span class="sql-comment">-- Плохо: начинаем с большой таблицы</span>
+<span class="sql-keyword">SELECT</span> * 
+<span class="sql-keyword">FROM</span> large_table l
+<span class="sql-keyword">JOIN</span> small_table s <span class="sql-keyword">ON</span> l.id = s.large_id;
+
+<span class="sql-comment">-- Хорошо: начинаем с маленькой таблицы</span>
+<span class="sql-keyword">SELECT</span> * 
+<span class="sql-keyword">FROM</span> small_table s
+<span class="sql-keyword">JOIN</span> large_table l <span class="sql-keyword">ON</span> s.large_id = l.id;</code>
+                    </div>
+                    
+                    <h4>Оптимизация подзапросов</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Преобразование коррелированного подзапроса в JOIN</span>
+<span class="sql-comment">-- Плохо: коррелированный подзапрос</span>
+<span class="sql-keyword">SELECT</span> 
+    e.name,
+    (<span class="sql-keyword">SELECT</span> department_name <span class="sql-keyword">FROM</span> departments d <span class="sql-keyword">WHERE</span> d.id = e.department_id)
+<span class="sql-keyword">FROM</span> employees e;
+
+<span class="sql-comment">-- Хорошо: LEFT JOIN</span>
+<span class="sql-keyword">SELECT</span> 
+    e.name,
+    d.department_name
+<span class="sql-keyword">FROM</span> employees e
+<span class="sql-keyword">LEFT JOIN</span> departments d <span class="sql-keyword">ON</span> e.department_id = d.id;</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 4 -->
+                <div class="lesson-card">
+                    <h3>Статистика и настройка производительности</h3>
+                    
+                    <h4>Сбор статистики</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Обновление статистики</span>
+<span class="sql-keyword">ANALYZE</span> employees; <span class="sql-comment">-- Для конкретной таблицы</span>
+<span class="sql-keyword">ANALYZE</span> VERBOSE employees; <span class="sql-comment">-- С подробным выводом</span>
+<span class="sql-keyword">ANALYZE</span>; <span class="sql-comment">-- Для всей базы данных</span>
+
+<span class="sql-comment">-- Просмотр статистики</span>
+<span class="sql-keyword">SELECT</span> schemaname, tablename, attname, n_distinct, most_common_vals
+<span class="sql-keyword">FROM</span> pg_stats 
+<span class="sql-keyword">WHERE</span> tablename = <span class="sql-string">'employees'</span>;
+
+<span class="sql-comment">-- Установка целевого объема статистики</span>
+<span class="sql-keyword">ALTER TABLE</span> employees <span class="sql-keyword">ALTER COLUMN</span> department <span class="sql-keyword">SET STATISTICS</span> <span class="sql-number">1000</span>;</code>
+                    </div>
+                    
+                    <h4>Параметры конфигурации</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Просмотр текущих настроек</span>
+<span class="sql-keyword">SHOW</span> shared_buffers;
+<span class="sql-keyword">SHOW</span> work_mem;
+<span class="sql-keyword">SHOW</span> effective_cache_size;
+
+<span class="sql-comment">-- Временное изменение параметров</span>
+<span class="sql-keyword">SET</span> work_mem = <span class="sql-string">'64MB'</span>;
+<span class="sql-keyword">SET</span> LOCAL work_mem = <span class="sql-string">'128MB'</span>; <span class="sql-comment">-- Только для текущей транзакции</span>
+
+<span class="sql-comment">-- Рекомендуемые настройки для разных размеров БД</span>
+<span class="sql-comment">-- Маленькая БД (&lt; 1GB RAM)</span>
+shared_buffers = 256MB
+work_mem = 16MB
+maintenance_work_mem = 64MB
+
+<span class="sql-comment">-- Средняя БД (4-8GB RAM)</span>
+shared_buffers = 2GB
+work_mem = 64MB
+maintenance_work_mem = 512MB
+effective_cache_size = 6GB</code>
+                    </div>
+                    
+                    <h4>Мониторинг производительности</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Медленные запросы</span>
+<span class="sql-keyword">SELECT</span> 
+    query,
+    calls,
+    total_exec_time,
+    mean_exec_time,
+    rows
+<span class="sql-keyword">FROM</span> pg_stat_statements 
+<span class="sql-keyword">ORDER BY</span> mean_exec_time <span class="sql-keyword">DESC</span> 
+<span class="sql-keyword">LIMIT</span> <span class="sql-number">10</span>;
+
+<span class="sql-comment">-- Блокировки</span>
+<span class="sql-keyword">SELECT</span> 
+    pid,
+    usename,
+    query,
+    wait_event_type,
+    wait_event,
+    state
+<span class="sql-keyword">FROM</span> pg_stat_activity 
+<span class="sql-keyword">WHERE</span> state = <span class="sql-string">'active'</span>;</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 5 -->
+                <div class="lesson-card">
+                    <h3>Продвинутые техники оптимизации</h3>
+                    
+                    <h4>Материализованные представления</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Создание материализованного представления</span>
+<span class="sql-keyword">CREATE MATERIALIZED VIEW</span> mv_department_stats <span class="sql-keyword">AS</span>
+<span class="sql-keyword">SELECT</span> 
+    department,
+    <span class="sql-function">COUNT</span>(*) <span class="sql-keyword">AS</span> employee_count,
+    <span class="sql-function">AVG</span>(salary) <span class="sql-keyword">AS</span> avg_salary,
+    <span class="sql-function">SUM</span>(salary) <span class="sql-keyword">AS</span> total_salary
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">GROUP BY</span> department;
+
+<span class="sql-comment">-- Обновление материализованного представления</span>
+<span class="sql-keyword">REFRESH MATERIALIZED VIEW</span> mv_department_stats;
+<span class="sql-keyword">REFRESH MATERIALIZED VIEW</span> CONCURRENTLY mv_department_stats; <span class="sql-comment">-- Без блокировки</span>
+
+<span class="sql-comment">-- Создание индекса на материализованном представлении</span>
+<span class="sql-keyword">CREATE UNIQUE INDEX</span> idx_mv_department <span class="sql-keyword">ON</span> mv_department_stats (department);</code>
+                    </div>
+                    
+                    <h4>Параллельные запросы</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Настройка параллельных запросов</span>
+<span class="sql-keyword">SET</span> max_parallel_workers_per_gather = <span class="sql-number">4</span>;
+<span class="sql-keyword">SET</span> parallel_setup_cost = <span class="sql-number">1000</span>;
+<span class="sql-keyword">SET</span> parallel_tuple_cost = <span class="sql-number">0.1</span>;
+
+<span class="sql-comment">-- Принудительное использование параллелизма</span>
+<span class="sql-keyword">ALTER TABLE</span> large_table <span class="sql-keyword">SET</span> (parallel_workers = <span class="sql-number">4</span>);
+
+<span class="sql-comment">-- Запрос, который может использовать параллелизм</span>
+<span class="sql-keyword">EXPLAIN ANALYZE</span>
+<span class="sql-keyword">SELECT</span> <span class="sql-function">COUNT</span>(*), <span class="sql-function">AVG</span>(salary)
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">WHERE</span> department <span class="sql-keyword">IN</span> (<span class="sql-string">'IT'</span>, <span class="sql-string">'Engineering'</span>, <span class="sql-string">'Sales'</span>);</code>
+                    </div>
+                    
+                    <h4>Оптимизация транзакций</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Минимизация времени блокировки</span>
+<span class="sql-comment">-- Плохо: долгая транзакция</span>
+<span class="sql-keyword">BEGIN</span>;
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> accounts <span class="sql-keyword">WHERE</span> user_id = <span class="sql-number">123</span> <span class="sql-keyword">FOR UPDATE</span>;
+<span class="sql-comment">-- Долгие вычисления...</span>
+<span class="sql-keyword">UPDATE</span> accounts <span class="sql-keyword">SET</span> balance = balance - <span class="sql-number">100</span> <span class="sql-keyword">WHERE</span> user_id = <span class="sql-number">123</span>;
+<span class="sql-keyword">COMMIT</span>;
+
+<span class="sql-comment">-- Хорошо: быстрая транзакция</span>
+<span class="sql-keyword">BEGIN</span>;
+<span class="sql-keyword">UPDATE</span> accounts <span class="sql-keyword">SET</span> balance = balance - <span class="sql-number">100</span> <span class="sql-keyword">WHERE</span> user_id = <span class="sql-number">123</span>;
+<span class="sql-keyword">COMMIT</span>;</code>
+                    </div>
+                    
+                    <h4>Разбиение таблиц (Partitioning)</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Создание секционированной таблицы</span>
+<span class="sql-keyword">CREATE TABLE</span> sales (
+    id <span class="sql-keyword">SERIAL</span>,
+    sale_date <span class="sql-keyword">DATE</span> <span class="sql-keyword">NOT NULL</span>,
+    amount <span class="sql-keyword">DECIMAL</span>(<span class="sql-number">10</span>, <span class="sql-number">2</span>),
+    region <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">50</span>)
+) <span class="sql-keyword">PARTITION BY RANGE</span> (sale_date);
+
+<span class="sql-comment">-- Создание секций</span>
+<span class="sql-keyword">CREATE TABLE</span> sales_2023_q1 <span class="sql-keyword">PARTITION OF</span> sales
+<span class="sql-keyword">FOR VALUES FROM</span> (<span class="sql-string">'2023-01-01'</span>) <span class="sql-keyword">TO</span> (<span class="sql-string">'2023-04-01'</span>);
+
+<span class="sql-keyword">CREATE TABLE</span> sales_2023_q2 <span class="sql-keyword">PARTITION OF</span> sales
+<span class="sql-keyword">FOR VALUES FROM</span> (<span class="sql-string">'2023-04-01'</span>) <span class="sql-keyword">TO</span> (<span class="sql-string">'2023-07-01'</span>);
+
+<span class="sql-comment">-- Индексы для секций</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_sales_2023_q1_date <span class="sql-keyword">ON</span> sales_2023_q1 (sale_date);
+<span class="sql-keyword">CREATE INDEX</span> idx_sales_2023_q2_date <span class="sql-keyword">ON</span> sales_2023_q2 (sale_date);</code>
+                    </div>
+                </div>
+                
+                <!-- Практическое задание -->
+                <div class="lesson-card">
+                    <h3><i class="fas fa-tasks"></i> Практическое задание: Оптимизация реального сценария</h3>
+                    <p>Дана медленная база данных интернет-магазина. Ваша задача - оптимизировать её работу:</p>
+                    <ol>
+                        <li>Проанализируйте 5 самых медленных запросов с помощью pg_stat_statements</li>
+                        <li>Для каждого медленного запроса:
+                            <ul>
+                                <li>Используйте EXPLAIN ANALYZE для анализа плана выполнения</li>
+                                <li>Определите "узкие места" (последовательные сканирования, отсутствие индексов)</li>
+                                <li>Предложите оптимизации (индексы, переписывание запросов)</li>
+                            </ul>
+                        </li>
+                        <li>Создайте материализованное представление для часто запрашиваемой агрегации</li>
+                        <li>Настройте параметры PostgreSQL для вашего оборудования (4GB RAM, 4 ядра CPU)</li>
+                        <li>Реализуйте секционирование для большой таблицы заказов по датам</li>
+                        <li>Создайте план регулярного обслуживания (автовакуумирование, обновление статистики)</li>
+                    </ol>
+                </div>
+                
+                <!-- Заключение курса -->
+                
+            </div>
+            
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Навигация по модулям -->
+                <div class="module-nav">
+                    <h3>Модули курса</h3>
+                    <ul>
+                        <li><a href="module1.html"><i class="fas fa-database"></i> Модуль 1: Основы PostgreSQL</a></li>
+                        <li><a href="module2.html"><i class="fas fa-filter"></i> Модуль 2: Фильтрация</a></li>
+                        <li><a href="module3.html"><i class="fas fa-project-diagram"></i> Модуль 3: JOINs</a></li>
+                        <li><a href="module4.html"><i class="fas fa-calculator"></i> Модуль 4: Агрегация</a></li>
+                        <li><a href="module5.html"><i class="fas fa-code"></i> Модуль 5: Расширенные возможности</a></li>
+                        <li><a href="module6.html" class="active"><i class="fas fa-tachometer-alt"></i> Модуль 6: Оптимизация</a></li>
+                    </ul>
+                </div>
+                
+                
+            </aside>
+        </div>
+        
+        <!-- Навигационные кнопки -->
+        <div class="nav-buttons">
+            <a href="module5.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Предыдущий модуль</a>
+            <a href="index.html" class="nav-button">Завершить курс <i class="fas fa-graduation-cap"></i></a>
+        </div>
+    </main>
+    
+   
+    
+    
+    <script src="script.js"></script>
+</body>
+</html>

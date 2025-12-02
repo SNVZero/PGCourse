@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL: Учебно-методический комплекс</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Дополнительные стили для оформления как на скриншоте */
+        .course-header {
+            text-align: center;
+            margin: 2rem 0 3rem;
+        }
+        
+        .course-header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+        
+        .course-description {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+        
+        .course-description h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .author-info {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .author-info h3 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .course-structure {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .course-structure h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .structure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .structure-card {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+        
+        .structure-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .structure-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .structure-card ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .structure-card li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .structure-card li:before {
+            content: "•";
+            color: var(--accent-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .requirements {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .requirements h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .tool-card {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .tool-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .tool-card i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .tool-card h4 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .recommendations {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .recommendations h3 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .start-learning {
+            text-align: center;
+            margin: 3rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .structure-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .course-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+  
+    
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Заголовок курса -->
+        <div class="course-header">
+            <h1>Электронный учебно-методический комплекс</h1>
+        </div>
+        
+        <!-- Описание курса -->
+        <section class="course-description">
+            <h2>Название курса: Язык запросов PostgreSQL</h2>
+            
+            <p>Данный учебно-методический комплекс был создан для изучения одного из самых мощных и популярных языков запросов для реляционных баз данных - PostgreSQL. Курс охватывает все аспекты работы с PostgreSQL: от основ PostgreSQL до продвинутых функций и оптимизации производительности.</p>
+            
+            <div class="author-info">
+                <h3>Об авторе</h3>
+                <p><strong>Разработчик курса:</strong> Симаков Никита Владимирович</p>
+                <p><strong>Статус:</strong> Студент 2 курса магистратуры ФКТиПМ</p>
+                <p><strong>Курс:</strong> «Анализ информационных технологий»</p>
+            </div>
+            
+            <p>Студентам предлагается изучить 6 разделов, охватывающих все аспекты работы с PostgreSQL.
+					 Разделы заканчиваются набором контрольных вопросов и упражнений для самостоятельного выполнения. </p>
+            
+           
+        </section>
+        
+        <!-- Структура курса -->
+        <section class="course-structure" id="modules">
+            <h2>Структура курса</h2>
+            <p>Курс состоит из 6 модулей, каждый из которых посвящен определенной теме:</p>
+            
+            <div class="structure-grid">
+                <div class="structure-card">
+                    <h3><i class="fas fa-database"></i> Модуль 1: Основы PostgreSQL</h3>
+                    <ul>
+                        <li>Введение в реляционные базы данных</li>
+                        <li>Установка и настройка PostgreSQL</li>
+                        <li>Базовые операции (SELECT, INSERT, UPDATE, DELETE)</li>
+                        <li>Создание и управление таблицами</li>
+                    </ul>
+                    <a href="module1.html" class="cta-button-small" style="margin-top: 1rem; display: inline-block;">Изучить модуль →</a>
+                </div>
+                
+                <div class="structure-card">
+                    <h3><i class="fas fa-filter"></i> Модуль 2: Фильтрация и сортировка</h3>
+                    <ul>
+                        <li>Оператор WHERE и условия фильтрации</li>
+                        <li>Сортировка с помощью ORDER BY</li>
+                        <li>Ограничение результатов (LIMIT, OFFSET)</li>
+                        <li>Операторы сравнения и логические операторы</li>
+                    </ul>
+                    <a href="module2.html" class="cta-button-small" style="margin-top: 1rem; display: inline-block;">Изучить модуль →</a>
+                </div>
+                
+                <div class="structure-card">
+                    <h3><i class="fas fa-project-diagram"></i> Модуль 3: Соединение таблиц</h3>
+                    <ul>
+                        <li>INNER JOIN и OUTER JOIN</li>
+                        <li>LEFT/RIGHT/FULL OUTER JOIN</li>
+                        <li>Самообъединения (Self JOIN)</li>
+                        <li>Множественные соединения таблиц</li>
+                    </ul>
+                    <a href="module3.html" class="cta-button-small" style="margin-top: 1rem; display: inline-block;">Изучить модуль →</a>
+                </div>
+                
+                <div class="structure-card">
+                    <h3><i class="fas fa-calculator"></i> Модуль 4: Агрегация и группировка</h3>
+                    <ul>
+                        <li>Агрегатные функции (COUNT, SUM, AVG)</li>
+                        <li>Группировка данных (GROUP BY)</li>
+                        <li>Фильтрация групп (HAVING)</li>
+                        <li>Оконные функции</li>
+                    </ul>
+                    <a href="module4.html" class="cta-button-small" style="margin-top: 1rem; display: inline-block;">Изучить модуль →</a>
+                </div>
+                
+                <div class="structure-card">
+                    <h3><i class="fas fa-code"></i> Модуль 5: Расширенные возможности</h3>
+                    <ul>
+                        <li>Общие табличные выражения (CTE)</li>
+                        <li>Рекурсивные запросы</li>
+                        <li>Работа с JSON данными</li>
+                        <li>Полнотекстовый поиск</li>
+                    </ul>
+                    <a href="module5.html" class="cta-button-small" style="margin-top: 1rem; display: inline-block;">Изучить модуль →</a>
+                </div>
+                
+                <div class="structure-card">
+                    <h3><i class="fas fa-tachometer-alt"></i> Модуль 6: Оптимизация</h3>
+                    <ul>
+                        <li>Индексы и их типы</li>
+                        <li>Анализ планов выполнения (EXPLAIN)</li>
+                        <li>Оптимизация запросов</li>
+                        <li>Мониторинг производительности</li>
+                    </ul>
+                    <a href="module6.html" class="cta-button-small" style="margin-top: 1rem; display: inline-block;">Изучить модуль →</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Требования к ПО -->
+        <section class="requirements">
+            <h2>Требования к программному обеспечению</h2>
+            <p>Для успешного прохождения курса необходимо установить следующие инструментальные средства:</p>
+            
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <i class="fas fa-database"></i>
+                    <h4>PostgreSQL</h4>
+                    <p>Система управления базами данных</p>
+                </div>
+                
+                <div class="tool-card">
+                    <i class="fas fa-terminal"></i>
+                    <h4>psql</h4>
+                    <p>Командная строка PostgreSQL</p>
+                </div>
+                
+                <div class="tool-card">
+                    <i class="fas fa-desktop"></i>
+                    <h4>pgAdmin</h4>
+                    <p>Графический интерфейс для PostgreSQL</p>
+                </div>
+                
+                <div class="tool-card">
+                    <i class="fas fa-code"></i>
+                    <h4>VS Code</h4>
+                    <p>Редактор кода с поддержкой PostgreSQL</p>
+                </div>
+            </div>
+            
+            <div class="recommendations">
+                <h3>Рекомендации по установке:</h3>
+                <p>Для удобства написания PostgreSQL-запросов советуем использовать VS Code с расширениями для PostgreSQL или специализированные IDE для работы с базами данных. Также наиболее предпочтительная ОС - Linux, но курс может быть пройден и на Windows или macOS с соответствующими настройками.</p>
+            </div>
+        </section>
+        
+        <!-- Пример кода -->
+        <section class="code-example-home" id="examples">
+            <h2 class="section-title">Пример PostgreSQL запроса</h2>
+            <p>Следующий запрос демонстрирует использование оконных функций, CTE и агрегатных функций в PostgreSQL:</p>
+            
+            <div class="code-example">
+                <code><span class="sql-keyword">WITH</span> sales_data <span class="sql-keyword">AS</span> (
+    <span class="sql-keyword">SELECT</span> 
+        region,
+        product_category,
+        sale_date,
+        <span class="sql-function">SUM</span>(amount) <span class="sql-keyword">AS</span> daily_sales
+    <span class="sql-keyword">FROM</span> sales
+    <span class="sql-keyword">WHERE</span> sale_date <span class="sql-keyword">BETWEEN</span> <span class="sql-string">'2023-01-01'</span> <span class="sql-keyword">AND</span> <span class="sql-string">'2023-12-31'</span>
+    <span class="sql-keyword">GROUP BY</span> region, product_category, sale_date
+),
+ranked_sales <span class="sql-keyword">AS</span> (
+    <span class="sql-keyword">SELECT</span> 
+        region,
+        product_category,
+        sale_date,
+        daily_sales,
+        <span class="sql-function">RANK</span>() <span class="sql-keyword">OVER</span> (
+            <span class="sql-keyword">PARTITION BY</span> region, product_category 
+            <span class="sql-keyword">ORDER BY</span> daily_sales <span class="sql-keyword">DESC</span>
+        ) <span class="sql-keyword">AS</span> sales_rank,
+        <span class="sql-function">AVG</span>(daily_sales) <span class="sql-keyword">OVER</span> (
+            <span class="sql-keyword">PARTITION BY</span> region, product_category
+        ) <span class="sql-keyword">AS</span> avg_category_sales
+    <span class="sql-keyword">FROM</span> sales_data
+)
+<span class="sql-keyword">SELECT</span> 
+    region,
+    product_category,
+    sale_date,
+    daily_sales,
+    avg_category_sales,
+    <span class="sql-function">ROUND</span>((daily_sales / avg_category_sales - <span class="sql-string">1</span>) * <span class="sql-string">100</span>, <span class="sql-string">2</span>) <span class="sql-keyword">AS</span> percent_above_avg
+<span class="sql-keyword">FROM</span> ranked_sales
+<span class="sql-keyword">WHERE</span> sales_rank = <span class="sql-string">1</span>
+<span class="sql-keyword">ORDER BY</span> region, percent_above_avg <span class="sql-keyword">DESC</span>;</code>
+            </div>
+            
+            <p>Этот запрос анализирует продажи по регионам и категориям продуктов, определяя дни с максимальными продажами в каждой категории и вычисляя, насколько эти продажи превышают средние показатели.</p>
+        </section>
+        
+     
+    
+   
+    
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модуль 5: Расширенные возможности PostgreSQL | PostgreSQL Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+  
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Модуль 5: Расширенные возможности PostgreSQL</h1>
+            <p>CTE (Common Table Expressions), рекурсивные запросы, JSON функции, полнотекстовый поиск, расширенные типы данных.</p>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <div class="module-content">
+            <!-- Основной контент -->
+            <div class="main-content">
+                <!-- Введение -->
+                <div class="lesson-card">
+                    <h2>Расширенные возможности PostgreSQL</h2>
+                    <p>PostgreSQL предлагает множество продвинутых функций, которые выходят за рамки стандартного PostgreSQL. Эти возможности делают PostgreSQL одной из самых мощных и гибких СУБД.</p>
+                </div>
+                
+                <!-- Урок 1 -->
+                <div class="lesson-card">
+                    <h3>CTE (Common Table Expressions)</h3>
+                    <p>CTE (Common Table Expression) в PostgreSQL — это временное именованное выражение, которое определяет результирующий набор данных в рамках одного запроса. Оно существует только во время выполнения запроса и позволяет упростить сложные конструкции, разбив их на логические блоки.
+
+Как работает: CTE задаётся через ключевое слово WITH, за которым следует имя выражения и подзапрос в скобках AS (…). После этого к временному результату можно обращаться как к обычной таблице в основном запросе (SELECT, INSERT, UPDATE, DELETE).</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Простой CTE</span>
+<span class="sql-keyword">WITH</span> department_stats <span class="sql-keyword">AS</span> (
+    <span class="sql-keyword">SELECT</span> 
+        department,
+        <span class="sql-function">COUNT</span>(*) <span class="sql-keyword">AS</span> employee_count,
+        <span class="sql-function">AVG</span>(salary) <span class="sql-keyword">AS</span> avg_salary
+    <span class="sql-keyword">FROM</span> employees
+    <span class="sql-keyword">GROUP BY</span> department
+)
+<span class="sql-keyword">SELECT</span> *
+<span class="sql-keyword">FROM</span> department_stats
+<span class="sql-keyword">WHERE</span> employee_count > <span class="sql-number">5</span>;
+
+<span class="sql-comment">-- Несколько CTE</span>
+<span class="sql-keyword">WITH</span> 
+high_earners <span class="sql-keyword">AS</span> (
+    <span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees <span class="sql-keyword">WHERE</span> salary > <span class="sql-number">100000</span>
+),
+it_department <span class="sql-keyword">AS</span> (
+    <span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees <span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span>
+)
+<span class="sql-keyword">SELECT</span> 
+    h.name,
+    h.salary,
+    i.job_title
+<span class="sql-keyword">FROM</span> high_earners h
+<span class="sql-keyword">JOIN</span> it_department i <span class="sql-keyword">ON</span> h.id = i.id;</code>
+                    </div>
+                    
+                    <p><strong>Преимущества CTE:</strong></p>
+                    <ul>
+                        <li>Улучшают читаемость сложных запросов</li>
+                        <li>Позволяют повторно использовать подзапросы</li>
+                        <li>Поддерживают рекурсивные запросы</li>
+                        <li>Могут быть материализованы для оптимизации</li>
+                    </ul>
+                    
+                    
+                </div>
+                
+                <!-- Урок 2 -->
+                <div class="lesson-card">
+                    <h3>Рекурсивные CTE</h3>
+                    <p>Рекурсивные CTE позволяют обрабатывать иерархические данные, такие как организационные структуры, деревья комментариев и т.д.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Иерархия сотрудников (менеджер -> подчиненные)</span>
+<span class="sql-keyword">WITH RECURSIVE</span> employee_hierarchy <span class="sql-keyword">AS</span> (
+    <span class="sql-comment">-- Якорная часть: начальные строки</span>
+    <span class="sql-keyword">SELECT</span> 
+        id,
+        name,
+        manager_id,
+        <span class="sql-number">1</span> <span class="sql-keyword">AS</span> level,
+        name::<span class="sql-keyword">TEXT</span> <span class="sql-keyword">AS</span> path
+    <span class="sql-keyword">FROM</span> employees
+    <span class="sql-keyword">WHERE</span> manager_id <span class="sql-keyword">IS NULL</span> <span class="sql-comment">-- Начало с топ-менеджеров</span>
+    
+    <span class="sql-keyword">UNION ALL</span>
+    
+    <span class="sql-comment">-- Рекурсивная часть</span>
+    <span class="sql-keyword">SELECT</span> 
+        e.id,
+        e.name,
+        e.manager_id,
+        eh.level + <span class="sql-number">1</span>,
+        eh.path || <span class="sql-string">' -> '</span> || e.name
+    <span class="sql-keyword">FROM</span> employees e
+    <span class="sql-keyword">INNER JOIN</span> employee_hierarchy eh <span class="sql-keyword">ON</span> e.manager_id = eh.id
+)
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employee_hierarchy
+<span class="sql-keyword">ORDER BY</span> path;
+
+<span class="sql-comment">-- Генерация последовательности дат</span>
+<span class="sql-keyword">WITH RECURSIVE</span> date_series <span class="sql-keyword">AS</span> (
+    <span class="sql-keyword">SELECT</span> <span class="sql-string">'2023-01-01'</span>::<span class="sql-keyword">DATE</span> <span class="sql-keyword">AS</span> date
+    <span class="sql-keyword">UNION ALL</span>
+    <span class="sql-keyword">SELECT</span> date + <span class="sql-number">1</span>
+    <span class="sql-keyword">FROM</span> date_series
+    <span class="sql-keyword">WHERE</span> date < <span class="sql-string">'2023-01-31'</span>
+)
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> date_series;</code>
+                    </div>
+                    
+                    <p><strong>Компоненты рекурсивного CTE:</strong></p>
+                    <ol>
+                        <li><strong>Якорная часть:</strong> Начальный набор строк</li>
+                        <li><strong>Рекурсивная часть:</strong> Запрос, который ссылается на CTE</li>
+                        <li><strong>Условие остановки:</strong> WHERE в рекурсивной части</li>
+                    </ol>
+                </div>
+                
+                <!-- Урок 3 -->
+                <div class="lesson-card">
+                    <h3>Работа с JSON</h3>
+                    <p>В PostgreSQL работа с JSON опирается на два основных типа данных: json и jsonb. Они позволяют хранить и обрабатывать полуструктурированные данные, но различаются по способу хранения и производительности.
+
+Тип json сохраняет данные как текстовую строку «как есть»: с оригинальным форматированием, порядком ключей, пробелами и escape‑последовательностями Unicode. При этом PostgreSQL лишь проверяет корректность формата, не анализируя структуру.
+
+Тип jsonb (binary JSON) хранит данные в структурированном бинарном виде. </p>
+                    
+                    <h4>Создание и вставка JSON</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Создание таблицы с JSONB столбцом</span>
+<span class="sql-keyword">CREATE TABLE</span> products (
+    id <span class="sql-keyword">SERIAL PRIMARY KEY</span>,
+    name <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">100</span>),
+    attributes <span class="sql-keyword">JSONB</span>,
+    metadata <span class="sql-keyword">JSON</span>
+);
+
+<span class="sql-comment">-- Вставка JSON данных</span>
+<span class="sql-keyword">INSERT INTO</span> products (name, attributes) 
+<span class="sql-keyword">VALUES</span> (
+    <span class="sql-string">'Smartphone'</span>,
+    <span class="sql-string">'{"brand": "Apple", "model": "iPhone 14", "specs": {"storage": "128GB", "color": "Black"}, "price": 999.99}'</span>::<span class="sql-keyword">JSONB</span>
+);</code>
+                    </div>
+                    
+                    <h4>Извлечение данных из JSON</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Операторы доступа</span>
+<span class="sql-keyword">SELECT</span> 
+    name,
+    attributes-><span class="sql-string">'brand'</span> <span class="sql-keyword">AS</span> brand, <span class="sql-comment">-- JSON объект</span>
+    attributes->><span class="sql-string">'brand'</span> <span class="sql-keyword">AS</span> brand_text, <span class="sql-comment">-- Текст</span>
+    attributes-><span class="sql-string">'specs'</span>-><span class="sql-string">'storage'</span> <span class="sql-keyword">AS</span> storage,
+    attributes-><span class="sql-string">'price'</span>::<span class="sql-keyword">NUMERIC</span> <span class="sql-keyword">AS</span> price <span class="sql-comment">-- С приведением типа</span>
+<span class="sql-keyword">FROM</span> products;
+
+<span class="sql-comment">-- Функции для работы с JSON</span>
+<span class="sql-keyword">SELECT</span> 
+    <span class="sql-function">JSONB_PRETTY</span>(attributes) <span class="sql-keyword">AS</span> pretty_json,
+    <span class="sql-function">JSONB_OBJECT_KEYS</span>(attributes) <span class="sql-keyword">AS</span> keys,
+    <span class="sql-function">JSONB_ARRAY_LENGTH</span>(attributes-><span class="sql-string">'features'</span>) <span class="sql-keyword">AS</span> features_count
+<span class="sql-keyword">FROM</span> products;</code>
+                    </div>
+                    
+                    <h4>Поиск и индексация JSON</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Поиск в JSONB</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products
+<span class="sql-keyword">WHERE</span> attributes @> <span class="sql-string">'{"brand": "Apple"}'</span>; <span class="sql-comment">-- Содержит ключ-значение</span>
+
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products
+<span class="sql-keyword">WHERE</span> attributes ? <span class="sql-string">'price'</span>; <span class="sql-comment">-- Содержит ключ</span>
+
+<span class="sql-comment">-- Создание индекса для JSONB</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_products_attributes <span class="sql-keyword">ON</span> products <span class="sql-keyword">USING GIN</span> (attributes);</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 4 -->
+                <div class="lesson-card">
+                    <h3> Урок 4: Полнотекстовый поиск</h3>
+                    <p>PostgreSQL предоставляет мощную систему полнотекстового поиска с поддержкой морфологии, рейтинга и гибкой настройки.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Создание tsvector столбца</span>
+<span class="sql-keyword">ALTER TABLE</span> articles <span class="sql-keyword">ADD COLUMN</span> search_vector <span class="sql-keyword">TSVECTOR</span>;
+
+<span class="sql-comment">-- Заполнение tsvector</span>
+<span class="sql-keyword">UPDATE</span> articles 
+<span class="sql-keyword">SET</span> search_vector = <span class="sql-keyword">TO_TSVECTOR</span>(<span class="sql-string">'russian'</span>, title || <span class="sql-string">' '</span> || content);
+
+<span class="sql-comment">-- Создание индекса</span>
+<span class="sql-keyword">CREATE INDEX</span> idx_articles_search <span class="sql-keyword">ON</span> articles <span class="sql-keyword">USING GIN</span> (search_vector);
+
+<span class="sql-comment">-- Поиск с рейтингом</span>
+<span class="sql-keyword">SELECT</span> 
+    title,
+    <span class="sql-function">TS_RANK</span>(search_vector, query) <span class="sql-keyword">AS</span> rank,
+    <span class="sql-function">TS_HEADLINE</span>(<span class="sql-string">'russian'</span>, content, query) <span class="sql-keyword">AS</span> excerpt
+<span class="sql-keyword">FROM</span> articles, <span class="sql-keyword">TO_TSQUERY</span>(<span class="sql-string">'russian'</span>, <span class="sql-string">'поиск & база'</span>) query
+<span class="sql-keyword">WHERE</span> search_vector @@ query
+<span class="sql-keyword">ORDER BY</span> rank <span class="sql-keyword">DESC</span>;</code>
+                    </div>
+                    
+                    <h4>Операторы полнотекстового поиска</h4>
+                    <ul>
+                        <li><code>&</code> - И (AND)</li>
+                        <li><code>|</code> - ИЛИ (OR)</li>
+                        <li><code>!</code> - НЕ (NOT)</li>
+                        <li><code>&lt;-&gt;</code> - Расстояние между словами</li>
+                    </ul>
+                </div>
+                
+                <!-- Урок 5 -->
+                <div class="lesson-card">
+                    <h3>Расширенные типы данных</h3>
+                    
+                    <h4>Массивы</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Работа с массивами</span>
+<span class="sql-keyword">CREATE TABLE</span> projects (
+    id <span class="sql-keyword">SERIAL PRIMARY KEY</span>,
+    name <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">100</span>),
+    tags <span class="sql-keyword">TEXT</span>[],
+    team_member_ids <span class="sql-keyword">INTEGER</span>[]
+);
+
+<span class="sql-comment">-- Вставка массивов</span>
+<span class="sql-keyword">INSERT INTO</span> projects (name, tags, team_member_ids)
+<span class="sql-keyword">VALUES</span> (
+    <span class="sql-string">'Web Application'</span>,
+    <span class="sql-string">'{"web", "javascript", "react"}'</span>,
+    <span class="sql-string">'{1, 3, 5}'</span>
+);
+
+<span class="sql-comment">-- Запросы к массивам</span>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> projects 
+<span class="sql-keyword">WHERE</span> <span class="sql-string">'react'</span> = <span class="sql-keyword">ANY</span>(tags); <span class="sql-comment">-- Элемент в массиве</span>
+
+<span class="sql-keyword">SELECT</span> name, <span class="sql-function">UNNEST</span>(tags) <span class="sql-keyword">AS</span> tag <span class="sql-keyword">FROM</span> projects; <span class="sql-comment">-- Развернуть массив</span></code>
+                    </div>
+                    
+                    <h4>Составные типы (Composite Types)</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Создание составного типа</span>
+<span class="sql-keyword">CREATE TYPE</span> address_type <span class="sql-keyword">AS</span> (
+    street <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">100</span>),
+    city <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">50</span>),
+    postal_code <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">20</span>),
+    country <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">50</span>)
+);
+
+<span class="sql-comment">-- Использование в таблице</span>
+<span class="sql-keyword">CREATE TABLE</span> customers (
+    id <span class="sql-keyword">SERIAL PRIMARY KEY</span>,
+    name <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">100</span>),
+    address address_type
+);
+
+<span class="sql-comment">-- Доступ к полям составного типа</span>
+<span class="sql-keyword">SELECT</span> 
+    name,
+    (address).street,
+    (address).city
+<span class="sql-keyword">FROM</span> customers;</code>
+                    </div>
+                    
+                    <h4>Пространственные данные (PostGIS)</h4>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Пример с PostGIS (требуется установка расширения)</span>
+<span class="sql-keyword">CREATE EXTENSION</span> postgis;
+
+<span class="sql-keyword">CREATE TABLE</span> locations (
+    id <span class="sql-keyword">SERIAL PRIMARY KEY</span>,
+    name <span class="sql-keyword">VARCHAR</span>(<span class="sql-number">100</span>),
+    geom <span class="sql-keyword">GEOMETRY</span>(Point, <span class="sql-number">4326</span>)
+);
+
+<span class="sql-comment">-- Найти точки в радиусе 10 км</span>
+<span class="sql-keyword">SELECT</span> name
+<span class="sql-keyword">FROM</span> locations
+<span class="sql-keyword">WHERE</span> <span class="sql-function">ST_DWithin</span>(
+    geom,
+    <span class="sql-function">ST_SetSRID</span>(<span class="sql-function">ST_MakePoint</span>(<span class="sql-number">37.6173</span>, <span class="sql-number">55.7558</span>), <span class="sql-number">4326</span>), <span class="sql-comment">-- Москва</span>
+    <span class="sql-number">10000</span> <span class="sql-comment">-- 10 км в метрах</span>
+);</code>
+                    </div>
+                </div>
+                
+                <!-- Практическое задание -->
+                <div class="lesson-card">
+                    <h3><i class="fas fa-tasks"></i> Практическое задание</h3>
+                    <p>Создайте базу данных для блога со следующими требованиями:</p>
+                    <ol>
+                        <li>Используйте JSONB для хранения метаданных статей (автор, теги, дата публикации)</li>
+                        <li>Реализуйте иерархическую структуру комментариев с помощью рекурсивного CTE</li>
+                        <li>Добавьте полнотекстовый поиск по заголовкам и содержанию статей</li>
+                        <li>Создайте запрос, который группирует статьи по месяцам и считает количество</li>
+                        <li>Реализуйте поиск статей по нескольким тегам одновременно</li>
+                        <li>Создайте CTE, который показывает путь от корневого комментария до каждого ответа</li>
+                    </ol>
+                </div>
+					 <div class="lesson-card" style="background-color: #e8f5e9; border-left: 4px solid var(--accent-color);">
+                    
+                    <a href="index.html" class="cta-button" style="margin-top: 20px; display: inline-block;">
+                        <i class="fas fa-home"></i> Вернуться на главную
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Навигация по модулям -->
+                <div class="module-nav">
+                    <h3>Модули курса</h3>
+                    <ul>
+                        <li><a href="module1.html"><i class="fas fa-database"></i> Модуль 1: Основы PostgreSQL</a></li>
+                        <li><a href="module2.html"><i class="fas fa-filter"></i> Модуль 2: Фильтрация</a></li>
+                        <li><a href="module3.html"><i class="fas fa-project-diagram"></i> Модуль 3: JOINs</a></li>
+                        <li><a href="module4.html"><i class="fas fa-calculator"></i> Модуль 4: Агрегация</a></li>
+                        <li><a href="module5.html" class="active"><i class="fas fa-code"></i> Модуль 5: Расширенные возможности</a></li>
+                        <li><a href="module6.html"><i class="fas fa-tachometer-alt"></i> Модуль 6: Оптимизация</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Дополнительные ресурсы -->
+                
+            </aside>
+        </div>
+        
+        <!-- Навигационные кнопки -->
+        <div class="nav-buttons">
+            <a href="module4.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Предыдущий модуль</a>
+            <a href="module6.html" class="nav-button">Следующий модуль <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </main>
+    
+   
+    
+    <script src="script.js"></script>
+</body>
+</html>

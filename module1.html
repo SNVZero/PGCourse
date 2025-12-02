@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модуль 1: Основы PostgreSQL и PostgreSQL | PostgreSQL Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+  
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Модуль 1: Основы PostgreSQL и PostgreSQL</h1>
+            <p>Введение в реляционные базы данных, установка PostgreSQL, базовые операции SELECT, INSERT, UPDATE, DELETE.</p>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <div class="module-content">
+            <!-- Основной контент -->
+            <div class="main-content">
+                <!-- Введение -->
+                <div class="lesson-card">
+                    <h2>Введение в PostgreSQL</h2>
+                    <p>PostgreSQL — это мощная, открытая объектно-реляционная система управления базами данных (СУБД), известная своей надежностью, соответствием стандартам и богатым набором функций.</p>
+                
+                </div>
+                
+                <!-- Урок 1 -->
+                <div class="lesson-card">
+                    <h3>  Установка и настройка PostgreSQL</h3>
+                    <p>PostgreSQL можно установить на различные операционные системы. Вот основные шаги:</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment"># Для Ubuntu/Debian</span>
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+<span class="sql-comment"># Запуск службы PostgreSQL</span>
+sudo systemctl start postgresql
+
+<span class="sql-comment"># Подключение к серверу</span>
+sudo -u postgres psql</code>
+                    </div>
+                    
+                    <p>После установки создайте свою первую базу данных:</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Создание базы данных</span>
+<span class="sql-keyword">CREATE DATABASE</span> mydatabase;
+
+<span class="sql-comment">-- Подключение к базе данных</span>
+<span class="sql-keyword">\c</span> mydatabase;</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 2 -->
+                <div class="lesson-card">
+                    <h3></i>Основные PostgreSQL команды</h3>
+                    <p>PostgreSQL (Structured Query Language) — язык структурированных запросов для работы с базами данных.</p>
+                    
+                    <h4>Команда SELECT</h4>
+                    <p>Оператор SELECT — ключевой инструмент в PostgreSQL для извлечения данных из базы данных. Его задача — сформировать набор результатов (результат‑сет) — таблицу с выбранными данными, которая возвращается пользователю.</p>
+                    
+                    <div class="code-example">
+                        <code>
+<span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> employees;<span class="sql-comment">-- Выбрать все столбцы из таблицы</span><br>
+
+
+<span class="sql-keyword">SELECT</span> first_name, last_name, salary 
+<span class="sql-keyword">FROM</span> employees;<span class="sql-comment">-- Выбрать конкретные столбцы</span><br>
+
+
+<span class="sql-keyword">SELECT DISTINCT</span> department <span class="sql-keyword">FROM</span> employees; <span class="sql-comment">-- Выбрать уникальные значения</span></code>
+                    </div>
+						   <h3>Изменение данных (INSERT, UPDATE, DELETE)</h3>
+                    
+                    <h4>Оператор INSERT</h4>
+						  <p>Оператор INSERT в PostgreSQL предназначен для добавления новых записей (строк) в таблицу базы данных. Это одна из ключевых команд языка DML (Data Manipulation Language), позволяющая наполнять таблицы данными.
+
+Суть работы оператора заключается в том, что он формирует новую строку в указанной таблице, заполняя её заданными значениями в соответствии со структурой таблицы. При этом строго соблюдается соответствие между типами данных столбцов и передаваемыми значениями, а также учитываются ограничения (NOT NULL, уникальные ключи, внешние ключи и др.), определённые при создании таблицы.</p>
+                    <div class="code-example">
+                        <code>
+<span class="sql-keyword">INSERT INTO</span> employees (first_name, last_name, department, salary)
+<span class="sql-keyword">VALUES</span> (<span class="sql-string">'Иван'</span>, <span class="sql-string">'Петров'</span>, <span class="sql-string">'IT'</span>, <span class="sql-number">75000</span>);<span class="sql-comment">-- Добавление одной записи</span><br>
+
+
+<span class="sql-keyword">INSERT INTO</span> employees (first_name, last_name, department, salary)
+<span class="sql-keyword">VALUES</span> 
+    (<span class="sql-string">'Мария'</span>, <span class="sql-string">'Сидорова'</span>, <span class="sql-string">'HR'</span>, <span class="sql-number">65000</span>),
+    (<span class="sql-string">'Алексей'</span>, <span class="sql-string">'Иванов'</span>, <span class="sql-string">'Sales'</span>, <span class="sql-number">70000</span>); <span class="sql-comment">-- Добавление нескольких записей</span></code>
+                    </div>
+                    
+                    <h4>UPDATE - обновление данных</h4>
+						  <p>Оператор UPDATE в PostgreSQL предназначен для изменения уже существующих данных в таблице базы данных. Это один из ключевых инструментов языка DML (Data Manipulation Language), позволяющий корректировать значения в отдельных столбцах или целых строках в соответствии с заданными условиями.
+
+Суть работы оператора заключается в том, что он находит строки, соответствующие определённому критерию, и заменяет в них значения указанных столбцов на новые. При этом система строго следит за соблюдением ограничений целостности данных: типов столбцов, правил NOT NULL, уникальных и внешних ключей. Если обновление нарушает какое‑либо из этих правил, операция прерывается с ошибкой.</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment"></span>
+<span class="sql-keyword">UPDATE</span> employees 
+<span class="sql-keyword">SET</span> salary = salary * <span class="sql-number">1.1</span>; <span class="sql-comment">-- Обновление всех записей, увеличить зарплату на 10%</span><br>
+
+
+<span class="sql-keyword">UPDATE</span> employees 
+<span class="sql-keyword">SET</span> department = <span class="sql-string">'Engineering'</span>
+<span class="sql-keyword">WHERE</span> department = <span class="sql-string">'IT'</span>; <span class="sql-comment">-- Обновление с условием</span></code>
+                    </div>
+                    
+                    <h4>DELETE - удаление данных</h4>
+						  <p>Оператор DELETE в PostgreSQL предназначен для удаления строк из таблицы базы данных. Это ключевая команда языка DML (Data Manipulation Language), позволяющая выборочно или полностью очищать таблицы от данных.
+
+Суть работы оператора заключается в том, что он идентифицирует строки, соответствующие заданному условию, и безвозвратно удаляет их из таблицы. При этом структура таблицы (её столбцы, ограничения, индексы) остаётся неизменной — изменяются только содержащиеся в ней данные.</p>
+                    <div class="code-example">
+                        <code>
+<span class="sql-keyword">DELETE FROM</span> employees 
+<span class="sql-keyword">WHERE</span> department = <span class="sql-string">'HR'</span>;<span class="sql-comment">-- Удаление с условием</span><br>
+
+
+<span class="sql-keyword">DELETE FROM</span> employees;<span class="sql-comment">-- Удаление всех записей (осторожно!)</span></code>
+                    </div>
+                    
+                    
+                </div>
+                
+          
+                
+                <!-- Практическое задание -->
+                <div class="lesson-card">
+                    <h3><i class="fas fa-tasks"></i> Практическое задание</h3>
+                    <p>Создайте базу данных "company" и выполните следующие шаги:</p>
+                    <ol>
+                        <li>Создайте таблицу "employees" с полями: id, name, position, department, salary, hire_date</li>
+                        <li>Добавьте 5 сотрудников в таблицу</li>
+                        <li>Измените должность одного сотрудника</li>
+                        <li>Удалите одного сотрудника</li>
+                        <li>Выведите список всех сотрудников</li>
+                    </ol>
+                </div>
+					 <div class="lesson-card" style="background-color: #e8f5e9; border-left: 4px solid var(--accent-color);">
+                    
+                    <a href="index.html" class="cta-button" style="margin-top: 20px; display: inline-block;">
+                        <i class="fas fa-home"></i> Вернуться на главную
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Навигация по модулям -->
+                <div class="module-nav">
+                    <h3>Модули курса</h3>
+                    <ul>
+                        <li><a href="module1.html" class="active"><i class="fas fa-database"></i> Модуль 1: Основы PostgreSQL</a></li>
+                        <li><a href="module2.html"><i class="fas fa-filter"></i> Модуль 2: Фильтрация</a></li>
+                        <li><a href="module3.html"><i class="fas fa-project-diagram"></i> Модуль 3: JOINs</a></li>
+                        <li><a href="module4.html"><i class="fas fa-calculator"></i> Модуль 4: Агрегация</a></li>
+                        <li><a href="module5.html"><i class="fas fa-code"></i> Модуль 5: Расширенные возможности</a></li>
+                        <li><a href="module6.html"><i class="fas fa-tachometer-alt"></i> Модуль 6: Оптимизация</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Дополнительные ресурсы -->
+                
+            </aside>
+        </div>
+        
+        <!-- Навигационные кнопки -->
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> На главную</a>
+            <a href="module2.html" class="nav-button">Следующий модуль <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </main>
+    
+   
+    
+    <script src="script.js"></script>
+</body>
+</html>

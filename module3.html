@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модуль 3: Соединение таблиц (JOINs) | PostgreSQL Course</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+   
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Модуль 3: Соединение таблиц (JOINs)</h1>
+            <p>INNER JOIN, LEFT/RIGHT JOIN, FULL OUTER JOIN, CROSS JOIN, самообъединения и работа с несколькими таблицами.</p>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <div class="module-content">
+            <!-- Основной контент -->
+            <div class="main-content">
+                <!-- Введение -->
+                <div class="lesson-card">
+                    <h2>Введение в JOIN операции</h2>
+                    <p>JOIN операции позволяют объединять данные из двух или более таблиц на основе связанных столбцов. Это одна из самых мощных возможностей PostgreSQL.</p>
+                    <p>В реляционных базах данных информация обычно разделена на несколько таблиц для устранения избыточности. JOIN операции позволяют "собрать" данные обратно.</p>
+                </div>
+                
+                <!-- Урок 1 -->
+                <div class="lesson-card">
+                    <h3>INNER JOIN</h3>
+                    <p>Оператор INNER JOIN в PostgreSQL объединяет строки из двух таблиц, оставляя только те записи, для которых найдено соответствие по заданному условию соединения.
+
+Механизм работы: система берёт каждую строку из первой (левой) таблицы и сопоставляет её со всеми строками второй (правой) таблицы. Если для пары строк выполняется условие JOIN (обычно — совпадение значений в связанных столбцах), они объединяются в одну строку результата. Строки, для которых соответствия не нашлось ни в одной из таблиц, в итоговый набор не попадают.
+
+Условие соединения указывается после ON: чаще всего это равенство ключевых столбцов (например, внешнего ключа в одной таблице и первичного — в другой). В результате получается «расширенная» строка, содержащая столбцы обеих таблиц.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Базовый синтаксис INNER JOIN</span>
+<span class="sql-keyword">SELECT</span> 
+    employees.name,
+    departments.department_name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">INNER JOIN</span> departments 
+    <span class="sql-keyword">ON</span> employees.department_id = departments.id;
+
+<span class="sql-comment">-- Альтернативный синтаксис (не рекомендуется)</span>
+<span class="sql-keyword">SELECT</span> 
+    employees.name,
+    departments.department_name
+<span class="sql-keyword">FROM</span> employees, departments
+<span class="sql-keyword">WHERE</span> employees.department_id = departments.id;</code>
+                    </div>
+                    
+                    <p><strong>Диаграмма Венна для INNER JOIN:</strong> Пересечение двух множеств</p>
+                    
+                    
+                </div>
+                
+                <!-- Урок 2 -->
+                <div class="lesson-card">
+                    <h3>LEFT JOIN и RIGHT JOIN</h3>
+                    
+                    <h4>LEFT JOIN (LEFT OUTER JOIN)</h4>
+                    <p>Оператор LEFT JOIN (или LEFT OUTER JOIN) в PostgreSQL объединяет строки из двух таблиц, сохраняя все строки из левой таблицы и присоединяя к ним соответствующие строки из правой таблицы — если они удовлетворяют условию соединения.
+
+Как это работает: система берёт каждую строку левой таблицы и ищет совпадения в правой по заданному условию (обычно через ON с равенством ключевых столбцов). Если совпадение найдено, строки объединяются. Если для строки левой таблицы нет соответствия в правой, она всё равно попадает в результат — а отсутствующие столбцы правой таблицы заполняются значениями NULL.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Все сотрудники, даже без отдела</span>
+<span class="sql-keyword">SELECT</span> 
+    employees.name,
+    departments.department_name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">LEFT JOIN</span> departments 
+    <span class="sql-keyword">ON</span> employees.department_id = departments.id;
+
+<span class="sql-comment">-- Найти сотрудников без отдела</span>
+<span class="sql-keyword">SELECT</span> employees.name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">LEFT JOIN</span> departments 
+    <span class="sql-keyword">ON</span> employees.department_id = departments.id
+<span class="sql-keyword">WHERE</span> departments.id <span class="sql-keyword">IS NULL</span>;</code>
+                    </div>
+                    
+                    <h4>RIGHT JOIN (RIGHT OUTER JOIN)</h4>
+                    <p>Оператор RIGHT JOIN (или RIGHT OUTER JOIN) в PostgreSQL объединяет строки из двух таблиц, гарантируя сохранение всех строк из правой таблицы (указанной после JOIN), к которым присоединяются соответствующие строки из левой таблицы — если они удовлетворяют условию соединения (ON).
+
+Как это работает: для каждой строки правой таблицы система ищет совпадения в левой по заданному условию. Если соответствие найдено, строки объединяются. Если для строки правой таблицы нет пары в левой, она всё равно попадает в результат — а столбцы левой таблицы в этой строке заполняются значениями NULL.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Все отделы, даже без сотрудников</span>
+<span class="sql-keyword">SELECT</span> 
+    departments.department_name,
+    employees.name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">RIGHT JOIN</span> departments 
+    <span class="sql-keyword">ON</span> employees.department_id = departments.id;
+
+<span class="sql-comment">-- Найти отделы без сотрудников</span>
+<span class="sql-keyword">SELECT</span> departments.department_name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">RIGHT JOIN</span> departments 
+    <span class="sql-keyword">ON</span> employees.department_id = departments.id
+<span class="sql-keyword">WHERE</span> employees.id <span class="sql-keyword">IS NULL</span>;</code>
+                    </div>
+                    
+                    <p><strong>Диаграммы Венна:</strong> LEFT JOIN - всё левое множество, RIGHT JOIN - всё правое множество</p>
+                </div>
+                
+                <!-- Урок 3 -->
+                <div class="lesson-card">
+                    <h3>FULL OUTER JOIN и CROSS JOIN</h3>
+                    
+                    <h4>FULL OUTER JOIN</h4>
+                    <p>Оператор FULL OUTER JOIN в PostgreSQL объединяет строки из двух таблиц, сохраняя все записи из обеих таблиц — как те, для которых нашлось соответствие по условию соединения, так и те, для которых соответствия нет.
+
+Как это работает: система сопоставляет строки левой и правой таблиц по условию ON. Если для строки из любой таблицы найдено соответствие в другой, они объединяются в одну строку результата. Если соответствия нет, строка всё равно попадает в результат, а недостающие столбцы из «пропущённой» таблицы заполняются значениями NULL.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Все сотрудники и все отделы</span>
+<span class="sql-keyword">SELECT</span> 
+    employees.name,
+    departments.department_name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">FULL OUTER JOIN</span> departments 
+    <span class="sql-keyword">ON</span> employees.department_id = departments.id;
+
+<span class="sql-comment">-- Найти записи без соответствий в обеих таблицах</span>
+<span class="sql-keyword">SELECT</span> 
+    employees.name,
+    departments.department_name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">FULL OUTER JOIN</span> departments 
+    <span class="sql-keyword">ON</span> employees.department_id = departments.id
+<span class="sql-keyword">WHERE</span> employees.id <span class="sql-keyword">IS NULL</span> 
+   <span class="sql-keyword">OR</span> departments.id <span class="sql-keyword">IS NULL</span>;</code>
+                    </div>
+                    
+                    <h4>CROSS JOIN</h4>
+                    <p>Оператор CROSS JOIN в PostgreSQL выполняет декартово произведение двух таблиц: каждая строка левой таблицы соединяется с каждой строкой правой таблицы, образуя все возможные комбинации.
+
+В отличие от других типов JOIN, здесь не задаётся условие соединения (ON) — система просто «перемножает» строки. Если в левой таблице N строк, а в правой — M, результат будет содержать N × M строк..</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Декартово произведение</span>
+<span class="sql-keyword">SELECT</span> 
+    employees.name,
+    projects.project_name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">CROSS JOIN</span> projects;
+
+<span class="sql-comment">-- Эквивалентный запрос (не рекомендуется)</span>
+<span class="sql-keyword">SELECT</span> 
+    employees.name,
+    projects.project_name
+<span class="sql-keyword">FROM</span> employees, projects;</code>
+                    </div>
+                    
+                    <p><strong>Внимание:</strong> CROSS JOIN может создавать огромные результаты (N × M строк)!</p>
+                </div>
+                
+                <!-- Урок 4 -->
+                <div class="lesson-card">
+                    <h3>Самообъединения и множественные JOIN</h3>
+                    
+                    <h4>Самообъединение (Self JOIN)</h4>
+                    <p>Self JOIN (самообъединение) — это операция в PostgreSQL, при которой таблица соединяется сама с собой. Это нужно, чтобы сопоставить строки внутри одной и той же таблицы, например, найти связи между записями, которые логически относятся друг к другу.
+
+Как это работает: таблица упоминается в запросе дважды — под разными алиасами (псевдонимами). Это позволяет обращаться к ней как к двум отдельным источникам данных и задавать условие соединения между её строками. Например, можно сопоставить сотрудника с его руководителем, если оба хранятся в одной таблице кадров.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Таблица employees с manager_id (ссылается на id в той же таблице)</span>
+<span class="sql-comment">-- Найти сотрудников и их менеджеров</span>
+<span class="sql-keyword">SELECT</span> 
+    e.name <span class="sql-keyword">AS</span> employee_name,
+    m.name <span class="sql-keyword">AS</span> manager_name
+<span class="sql-keyword">FROM</span> employees e
+<span class="sql-keyword">LEFT JOIN</span> employees m <span class="sql-keyword">ON</span> e.manager_id = m.id;
+
+<span class="sql-comment">-- Найти пары сотрудников с одинаковой зарплатой</span>
+<span class="sql-keyword">SELECT</span> 
+    e1.name <span class="sql-keyword">AS</span> employee1,
+    e2.name <span class="sql-keyword">AS</span> employee2,
+    e1.salary
+<span class="sql-keyword">FROM</span> employees e1
+<span class="sql-keyword">INNER JOIN</span> employees e2 
+    <span class="sql-keyword">ON</span> e1.salary = e2.salary 
+    <span class="sql-keyword">AND</span> e1.id &lt; e2.id; <span class="sql-comment">-- Чтобы избежать дубликатов</span></code>
+                    </div>
+                    
+                    <h4>Множественные JOIN</h4>
+                    <p>Множественные JOIN в PostgreSQL позволяют соединять более двух таблиц в одном запросе, выстраивая цепочки связей между ними. Это необходимо, когда данные распределены по нескольким связанным таблицам и требуется собрать их воедино для анализа или отчётности.
+
+Механизм работы: сначала соединяются первые две таблицы по условию ON, затем к полученному результату присоединяется третья таблица — тоже по своему условию, потом четвёртая и т. д. Каждое соединение оперирует с текущим «промежуточным» набором данных и следующей таблицей, постепенно расширяя строки за счёт новых столбцов.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- Соединение трёх таблиц</span>
+<span class="sql-keyword">SELECT</span> 
+    e.name <span class="sql-keyword">AS</span> employee_name,
+    d.department_name,
+    p.project_name,
+    ep.role
+<span class="sql-keyword">FROM</span> employees e
+<span class="sql-keyword">INNER JOIN</span> departments d <span class="sql-keyword">ON</span> e.department_id = d.id
+<span class="sql-keyword">INNER JOIN</span> employee_projects ep <span class="sql-keyword">ON</span> e.id = ep.employee_id
+<span class="sql-keyword">INNER JOIN</span> projects p <span class="sql-keyword">ON</span> ep.project_id = p.id;</code>
+                    </div>
+                </div>
+                
+                <!-- Урок 5 -->
+                <div class="lesson-card">
+                    <h3>Сложные условия JOIN и USING</h3>
+                    
+                    <h4>JOIN с несколькими условиями</h4>
+						  <p>ператор JOIN с несколькими условиями позволяет связывать таблицы по двум и более критериям одновременно. Вместо одного равенства в ON указывается логическая комбинация условий через AND, OR (реже — другие операторы).
+
+Как это работает: система сопоставляет строки таблиц только тогда, когда все указанные условия выполняются (при связке через AND) или когда выполняется хотя бы одно (при OR). Это даёт более точный контроль над тем, какие пары строк считать «совпадающими».</p>
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- JOIN по нескольким столбцам</span>
+<span class="sql-keyword">SELECT</span> 
+    o.order_id,
+    c.customer_name,
+    p.product_name
+<span class="sql-keyword">FROM</span> orders o
+<span class="sql-keyword">INNER JOIN</span> customers c 
+    <span class="sql-keyword">ON</span> o.customer_id = c.id 
+    <span class="sql-keyword">AND</span> o.region = c.region; <span class="sql-comment">-- Дополнительное условие</span>
+
+<span class="sql-comment">-- JOIN с использованием BETWEEN</span>
+<span class="sql-keyword">SELECT</span> 
+    e.name,
+    s.grade,
+    s.effective_date
+<span class="sql-keyword">FROM</span> employees e
+<span class="sql-keyword">INNER JOIN</span> salaries s 
+    <span class="sql-keyword">ON</span> e.id = s.employee_id 
+    <span class="sql-keyword">AND</span> CURRENT_DATE <span class="sql-keyword">BETWEEN</span> s.effective_date <span class="sql-keyword">AND</span> s.expiry_date;</code>
+                    </div>
+                    
+                    <h4>Ключевое слово USING</h4>
+                    <p>Ключевое слово USING в PostgreSQL упрощает соединение таблиц, когда условие основано на равенстве столбцов с одинаковыми именами в обеих таблицах.
+
+Как это работает: вместо развёрнутого условия ON table1.col = table2.col вы перечисляете имена столбцов в скобках после USING. Система автоматически строит равенства для указанных столбцов и включает каждый такой столбец в результат только один раз (без дублирования).</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- С использованием USING вместо ON</span>
+<span class="sql-keyword">SELECT</span> 
+    employees.name,
+    departments.department_name
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">INNER JOIN</span> departments <span class="sql-keyword">USING</span> (department_id); <span class="sql-comment">-- department_id есть в обеих таблицах</span>
+
+<span class="sql-comment">-- Для нескольких столбцов</span>
+<span class="sql-keyword">SELECT</span> *
+<span class="sql-keyword">FROM</span> table1
+<span class="sql-keyword">INNER JOIN</span> table2 <span class="sql-keyword">USING</span> (col1, col2, col3);</code>
+                    </div>
+                    
+                    <h4>NATURAL JOIN</h4>
+                    <p>NATURAL JOIN — это сокращённый способ соединения таблиц в PostgreSQL, при котором система автоматически связывает их по всем столбцам с одинаковыми именами (и совместимыми типами данных).
+
+Как это работает: вместо явного указания условия ON или USING вы просто пишете NATURAL JOIN — СУБД сама находит столбцы, присутствующие в обеих таблицах, и строит условие соединения на основе их равенства. В результате каждый такой столбец включается в выборку только один раз (без дублирования).<strong>Не рекомендуется</strong> из-за непредсказуемости.</p>
+                    
+                    <div class="code-example">
+                        <code><span class="sql-comment">-- NATURAL JOIN (осторожно!)</span>
+<span class="sql-keyword">SELECT</span> *
+<span class="sql-keyword">FROM</span> employees
+<span class="sql-keyword">NATURAL JOIN</span> departments;</code>
+                    </div>
+                </div>
+                
+                <!-- Практическое задание -->
+                <div class="lesson-card">
+                    <h3><i class="fas fa-tasks"></i> Практическое задание</h3>
+                    <p>Дана схема базы данных интернет-магазина:</p>
+                    <ul>
+                        <li>customers (id, name, email)</li>
+                        <li>orders (id, customer_id, order_date, total_amount)</li>
+                        <li>order_items (id, order_id, product_id, quantity, price)</li>
+                        <li>products (id, name, category_id, price)</li>
+                        <li>categories (id, category_name)</li>
+                    </ul>
+                    <p>Напишите запросы:</p>
+                    <ol>
+                        <li>Получите все заказы с именами клиентов</li>
+                        <li>Найдите клиентов, которые никогда не делали заказы</li>
+                        <li>Получите детализацию заказов: заказ → товары → категории</li>
+                        <li>Найдите самые популярные товары (по количеству продаж)</li>
+                        <li>Получите общую сумму заказов для каждого клиента</li>
+                    </ol>
+                </div>
+					 <div class="lesson-card" style="background-color: #e8f5e9; border-left: 4px solid var(--accent-color);">
+                    
+                    <a href="index.html" class="cta-button" style="margin-top: 20px; display: inline-block;">
+                        <i class="fas fa-home"></i> Вернуться на главную
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Навигация по модулям -->
+                <div class="module-nav">
+                    <h3>Модули курса</h3>
+                    <ul>
+                        <li><a href="module1.html"><i class="fas fa-database"></i> Модуль 1: Основы PostgreSQL</a></li>
+                        <li><a href="module2.html"><i class="fas fa-filter"></i> Модуль 2: Фильтрация</a></li>
+                        <li><a href="module3.html" class="active"><i class="fas fa-project-diagram"></i> Модуль 3: JOINs</a></li>
+                        <li><a href="module4.html"><i class="fas fa-calculator"></i> Модуль 4: Агрегация</a></li>
+                        <li><a href="module5.html"><i class="fas fa-code"></i> Модуль 5: Расширенные возможности</a></li>
+                        <li><a href="module6.html"><i class="fas fa-tachometer-alt"></i> Модуль 6: Оптимизация</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Дополнительные ресурсы -->
+                
+            </aside>
+        </div>
+        
+        <!-- Навигационные кнопки -->
+        <div class="nav-buttons">
+            <a href="module2.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Предыдущий модуль</a>
+            <a href="module4.html" class="nav-button">Следующий модуль <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+ 
+    <script src="script.js"></script>
+</body>
+</html>
